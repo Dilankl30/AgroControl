@@ -2,20 +2,22 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Mail, Globe, Fingerprint, ShieldCheck, ArrowRight, RefreshCw, Lock, AlertCircle, KeyRound } from 'lucide-react';
+import { X, Mail, Globe, Fingerprint, ShieldCheck, ArrowRight, RefreshCw, Lock, AlertCircle, KeyRound, User } from 'lucide-react';
 import { AgroControlLogo } from '@/components/ui/AgroControlLogo';
 import { OtpVerification } from '@/components/auth/OtpVerification';
 import { PasskeyAuth } from '@/components/auth/PasskeyAuth';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/components/ui/Toast';
 
-type AuthStep = 'select' | 'email_password' | 'email_otp' | 'otp' | 'passkey';
+type AuthStep = 'select' | 'email_password' | 'email_otp' | 'otp' | 'passkey' | 'register';
 
 export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const router = useRouter();
   const [step, setStep] = useState<AuthStep>('select');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -62,6 +64,69 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     } catch (err: unknown) {
       setLoading(false);
       const message = err instanceof Error ? err.message : 'Error al iniciar sesión';
+      setErrorMsg(message);
+    }
+  };
+
+  // Método 1b: Registrarse con Correo y Contraseña
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setErrorMsg('Por favor escribe un correo electrónico válido.');
+      return;
+    }
+    if (!password || password.length < 6) {
+      setErrorMsg('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMsg('Las contraseñas no coinciden.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: {
+          data: {
+            full_name: fullName.trim() || undefined,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        setLoading(false);
+        setErrorMsg(error.message || 'No se pudo crear la cuenta. Inténtalo de nuevo.');
+        return;
+      }
+
+      // Si Supabase devuelve sesión inmediata (confirmación desactivada)
+      if (data.session) {
+        toast('¡Cuenta creada con éxito! Abriendo panel de control 🌱');
+        setTimeout(() => {
+          setLoading(false);
+          handleAuthSuccess();
+        }, 400);
+        return;
+      }
+
+      // Si requiere confirmación por correo
+      setLoading(false);
+      toast('Cuenta creada. Revisa tu correo para confirmar tu dirección y luego inicia sesión.');
+      setPassword('');
+      setConfirmPassword('');
+      setErrorMsg(null);
+      setStep('select');
+    } catch (err: unknown) {
+      setLoading(false);
+      const message = err instanceof Error ? err.message : 'Error al registrarse';
       setErrorMsg(message);
     }
   };
@@ -292,6 +357,22 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                 </div>
               </div>
 
+              <div className="pt-4 text-center text-xs text-[#527068]">
+                ¿No tienes cuenta?{' '}
+                <button
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setFullName('');
+                    setConfirmPassword('');
+                    setStep('register');
+                  }}
+                  type="button"
+                  className="font-bold text-[#13795b] hover:underline cursor-pointer"
+                >
+                  Crear cuenta
+                </button>
+              </div>
+
               <div className="pt-6 border-t border-[#e2ece7] flex items-center gap-2 text-xs text-[#527068]">
                 <ShieldCheck className="w-4 h-4 text-[#13795b]" />
                 <span>Autenticación protegida con sesiones cifradas.</span>
@@ -375,6 +456,21 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                 </form>
               </div>
 
+              <div className="pt-4 text-center text-xs text-[#527068]">
+                ¿No tienes cuenta?{' '}
+                <button
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setConfirmPassword('');
+                    setStep('register');
+                  }}
+                  type="button"
+                  className="font-bold text-[#13795b] hover:underline cursor-pointer"
+                >
+                  Crear cuenta
+                </button>
+              </div>
+
               <div className="pt-6 border-t border-[#e2ece7] text-center text-xs text-[#527068]">
                 ¿Prefieres usar biometría?{' '}
                 <button
@@ -383,6 +479,131 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                   className="font-bold text-[#13795b] hover:underline cursor-pointer"
                 >
                   Entrar con Passkey →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Estado 2b: Registrarse con Correo y Contraseña */}
+          {step === 'register' && (
+            <div className="flex flex-col h-full justify-between animate-in fade-in duration-200">
+              <div>
+                <button
+                  onClick={() => setStep('select')}
+                  type="button"
+                  className="text-xs font-semibold text-[#527068] hover:text-[#093f33] transition-colors mb-6 cursor-pointer"
+                >
+                  ← Volver a opciones
+                </button>
+
+                <div className="text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-2">
+                  Crear cuenta
+                </div>
+                <h2 className="text-3xl font-black text-[#093f33] mb-2">Únete a AgroControl.</h2>
+                <p className="text-sm text-[#527068] leading-relaxed mb-6">
+                  Crea tu cuenta con correo y contraseña para acceder al panel de monitoreo.
+                </p>
+
+                <form onSubmit={handleRegister} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
+                      Nombre completo (opcional)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Tu nombre"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                      />
+                      <User className="w-4 h-4 text-[#8ea49c] absolute right-4 top-3.5 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
+                      Correo Electrónico
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="Escribe tu correo"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
+                      Contraseña
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="password"
+                        required
+                        placeholder="Mínimo 6 caracteres"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                      />
+                      <Lock className="w-4 h-4 text-[#8ea49c] absolute right-4 top-3.5 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
+                      Confirmar contraseña
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="password"
+                        required
+                        placeholder="Repite tu contraseña"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                      />
+                      <Lock className="w-4 h-4 text-[#8ea49c] absolute right-4 top-3.5 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  {errorMsg && (
+                    <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium leading-relaxed flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{errorMsg}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading || !email.trim() || !password.trim() || !confirmPassword.trim()}
+                    className="w-full py-4 rounded-2xl bg-[#093f33] hover:bg-[#0c4e40] disabled:opacity-50 text-white font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  >
+                    {loading ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <span>Crear cuenta</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+
+              <div className="pt-6 border-t border-[#e2ece7] text-center text-xs text-[#527068]">
+                ¿Ya tienes cuenta?{' '}
+                <button
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setStep('email_password');
+                  }}
+                  type="button"
+                  className="font-bold text-[#13795b] hover:underline cursor-pointer"
+                >
+                  Iniciar sesión →
                 </button>
               </div>
             </div>
