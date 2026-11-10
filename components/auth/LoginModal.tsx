@@ -89,20 +89,18 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     setErrorMsg(null);
 
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: cleanEmail,
-          password,
-          fullName: fullName.trim(),
-        }),
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: {
+          data: fullName.trim() ? { full_name: fullName.trim() } : {},
+        },
       });
-      const json = await res.json();
 
-      if (!res.ok) {
+      if (error) {
         setLoading(false);
-        setErrorMsg(json?.error || 'No se pudo crear la cuenta. Inténtalo de nuevo.');
+        setErrorMsg('No se pudo crear la cuenta. Revisa los datos e inténtalo de nuevo.');
         return;
       }
 
@@ -111,8 +109,15 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       setPassword('');
       setConfirmPassword('');
       setErrorMsg(null);
+
+      if (data.session) {
+        toast('Cuenta creada. Abriendo tu panel de AgroControl.');
+        handleAuthSuccess();
+        return;
+      }
+
       setStep('verify_email');
-      toast(json?.message || 'Revisa tu correo e ingresa el código de verificación.');
+      toast('Revisa tu correo e ingresa el código de verificación.');
     } catch (err: unknown) {
       setLoading(false);
       const message = err instanceof Error ? err.message : 'Error al registrarse';
