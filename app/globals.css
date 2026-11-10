@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #041f1b;
+  --forest: #08372f;
+  --deep: #062923;
+  --glass: rgba(11, 42, 36, 0.58);
+  --glass-2: rgba(10, 60, 49, 0.72);
+  --line: rgba(144, 255, 206, 0.28);
+  --mint: #56f3bd;
+  --mint-2: #23d196;
+  --leaf: #94ffb1;
+  --gold: #efc369;
+  --text: #edf6f0;
+  --muted: #b8d5cb;
+  --panel: #f8fbf9;
+  --ink: #16332e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Patrón de Malla de Coordenadas */
+.grid-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  background-image: linear-gradient(rgba(185, 255, 218, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(185, 255, 218, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, transparent, black 10%, black 88%, transparent);
+  pointer-events: none;
+}
+
+/* Efectos de Cristal / Glassmorphism */
+.glass-panel {
+  background: var(--glass-2);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.glass-modal {
+  background: rgba(6, 31, 26, 0.84);
+  border: 1px solid rgba(145, 255, 209, 0.22);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+}
+
+/* Enfoque accesible */
+:focus-visible {
+  outline: 3px solid #99ffd5;
+  outline-offset: 3px;
+}
