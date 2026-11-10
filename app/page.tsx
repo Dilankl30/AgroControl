@@ -57,7 +57,7 @@ export default function HomePage() {
       {/* Chatbot Interactivo Flotante AgroControl AI */}
       <Chatbot />
 
-      {/* Modal de Autenticación Unificada (Google / OTP / Passkey) */}
+      {/* Modal de acceso con correo y Passkey */}
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </div>
   );

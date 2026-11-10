@@ -42,12 +42,9 @@ const BOT_KNOWLEDGE_BASE: { keywords: string[]; answer: string }[] = [
       '• **Girar:** Activa o pausa la rotación automática suave.',
   },
   {
-    keywords: ['empezar', 'iniciar', 'login', 'acceso', 'cuenta', 'passkey', 'google', 'correo', 'otp', 'registro'],
+    keywords: ['empezar', 'iniciar', 'login', 'acceso', 'cuenta', 'passkey', 'biometria', 'correo', 'contraseña', 'registro'],
     answer:
-      '🔐 Para acceder al sistema, haz clic en **"Iniciar sesión →"** en la barra superior. No necesitas recordar contraseñas:\n\n' +
-      '1. **Google OAuth:** Acceso con tu cuenta institucional en un clic.\n' +
-      '2. **Correo OTP:** Te enviamos un código temporal de 6 dígitos a tu bandeja.\n' +
-      '3. **Passkeys (WebAuthn):** Entra con la biometría de tu dispositivo (Windows Hello, Face ID o huella).',
+      '🔐 Para acceder al sistema, haz clic en **"Iniciar sesión →"** en la barra superior. Puedes entrar con tu correo y contraseña o con la biometría de tu dispositivo (Windows Hello, Face ID o huella registrada como Passkey).',
   },
   {
     keywords: ['impacto', 'objetivo', 'beneficio', 'rendimiento', 'agua', 'plagas', 'sostenibilidad'],
@@ -85,7 +82,7 @@ function getBotReply(userText: string): string {
     'Entendido. Como asistente de **AgroControl**, puedo orientarte sobre:\n\n' +
     '• ¿Qué sensores y variables monitorea la plataforma?\n' +
     '• Cómo explorar e interactuar con el **Gemelo Digital 3D**.\n' +
-    '• Cómo autenticarte con Google, código OTP o Passkeys.\n' +
+    '• Cómo autenticarte con correo y contraseña o Passkeys.\n' +
     '• Los objetivos de sostenibilidad e impacto agronómico.\n\n' +
     '¿Te gustaría consultar alguna de estas opciones?'
   );

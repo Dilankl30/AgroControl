@@ -2,14 +2,13 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Mail, Globe, Fingerprint, ShieldCheck, ArrowRight, RefreshCw, Lock, AlertCircle, KeyRound, User } from 'lucide-react';
+import { X, Mail, Fingerprint, ShieldCheck, ArrowRight, RefreshCw, Lock, AlertCircle, User } from 'lucide-react';
 import { AgroControlLogo } from '@/components/ui/AgroControlLogo';
-import { OtpVerification } from '@/components/auth/OtpVerification';
 import { PasskeyAuth } from '@/components/auth/PasskeyAuth';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/components/ui/Toast';
 
-type AuthStep = 'select' | 'email_password' | 'email_otp' | 'otp' | 'passkey' | 'register';
+type AuthStep = 'select' | 'email_password' | 'passkey' | 'register';
 
 export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const router = useRouter();
@@ -123,70 +122,6 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       setLoading(false);
       const message = err instanceof Error ? err.message : 'Error al registrarse';
       setErrorMsg(message);
-    }
-  };
-
-  // Método 2: Enviar código OTP Real al correo
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanEmail = email.trim();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
-      setErrorMsg('Por favor escribe una dirección de correo válida.');
-      return;
-    }
-
-    setLoading(true);
-    setErrorMsg(null);
-
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOtp({
-        email: cleanEmail,
-        options: {
-          shouldCreateUser: true,
-        },
-      });
-
-      setLoading(false);
-      if (error) {
-        setErrorMsg('No se pudo enviar el código. Inténtalo más tarde.');
-      } else {
-        toast('Código enviado. Revisa tu correo.');
-        setStep('otp');
-      }
-    } catch {
-      setLoading(false);
-      setErrorMsg('No se pudo conectar con el servicio de acceso.');
-    }
-  };
-
-  // Método 3: Google OAuth
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    setErrorMsg(null);
-
-    const redirectUrl = `${window.location.origin}/auth/callback`;
-
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
-
-      if (error) {
-        setErrorMsg(error.message || 'Error al iniciar sesión con Google.');
-        setLoading(false);
-      }
-    } catch {
-      setErrorMsg('Error de conexión con Supabase. Revisa .env.local');
-      setLoading(false);
     }
   };
 
@@ -310,45 +245,6 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     <ArrowRight className="w-4 h-4 text-[#56f3bd] group-hover:translate-x-1 transition-transform" />
                   </button>
 
-                  {/* Código al Correo (OTP) */}
-                  <button
-                    onClick={() => {
-                      setErrorMsg(null);
-                      setStep('email_otp');
-                    }}
-                    type="button"
-                    className="w-full flex items-center justify-between p-4 rounded-2xl bg-white hover:bg-[#f6fbf8] border border-[#dce9e3] hover:border-[#13795b]/40 text-[#16352d] font-bold text-sm shadow-sm transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-9 h-9 rounded-xl bg-[#13795b]/10 flex items-center justify-center text-[#13795b]">
-                        <KeyRound className="w-5 h-5" />
-                      </div>
-                      <div className="text-left">
-                        <div className="text-[#093f33] font-bold">Código por Correo (OTP)</div>
-                        <div className="text-xs font-normal text-[#6f8f85]">Recibir 6 dígitos al correo</div>
-                      </div>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-[#7e9e94]" />
-                  </button>
-
-                  {/* Google OAuth */}
-                  <button
-                    onClick={handleGoogleLogin}
-                    disabled={loading}
-                    type="button"
-                    className="w-full flex items-center justify-between p-4 rounded-2xl bg-white hover:bg-[#f6fbf8] border border-[#dce9e3] hover:border-[#13795b]/40 text-[#16352d] font-bold text-sm shadow-sm transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-9 h-9 rounded-xl bg-[#13795b]/10 flex items-center justify-center text-[#13795b]">
-                        <Globe className="w-5 h-5" />
-                      </div>
-                      <div className="text-left">
-                        <div className="text-[#093f33] font-bold">Continuar con Google</div>
-                        <div className="text-xs font-normal text-[#6f8f85]">Cuenta corporativa o personal</div>
-                      </div>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-[#7e9e94]" />
-                  </button>
                 </div>
               </div>
 
@@ -604,81 +500,7 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
             </div>
           )}
 
-          {/* Estado 3: Enviar Código OTP al Correo */}
-          {step === 'email_otp' && (
-            <div className="flex flex-col h-full justify-between animate-in fade-in duration-200">
-              <div>
-                <button
-                  onClick={() => setStep('select')}
-                  type="button"
-                  className="text-xs font-semibold text-[#527068] hover:text-[#093f33] transition-colors mb-6 cursor-pointer"
-                >
-                  ← Volver a opciones
-                </button>
-
-                <div className="text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-2">
-                  Acceso por código
-                </div>
-                <h2 className="text-3xl font-black text-[#093f33] mb-3">Código temporal</h2>
-                <p className="text-sm text-[#527068] leading-relaxed mb-6">
-                  Ingresa tu correo para enviarte una clave temporal de 6 dígitos.
-                </p>
-
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
-                      Correo Electrónico
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="Escribe tu correo"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
-                    />
-                  </div>
-
-                  {errorMsg && (
-                    <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium leading-relaxed flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                      <span>{errorMsg}</span>
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={loading || !email.trim()}
-                    className="w-full py-4 rounded-2xl bg-[#093f33] hover:bg-[#0c4e40] disabled:opacity-50 text-white font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    {loading ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <span>Enviar código a mi correo</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-
-              <div className="pt-6 border-t border-[#e2ece7] text-xs text-[#527068]">
-                El correo es emitido por el servicio de autenticación Supabase.
-              </div>
-            </div>
-          )}
-
-          {/* Estado 4: Escribir Código OTP recibido */}
-          {step === 'otp' && (
-            <OtpVerification
-              email={email}
-              onBack={() => setStep('email_otp')}
-              onSuccess={handleAuthSuccess}
-            />
-          )}
-
-          {/* Estado 5: Passkeys / Biometría */}
+          {/* Estado 4: Passkeys / Biometría */}
           {step === 'passkey' && (
             <PasskeyAuth onBack={() => setStep('select')} onSuccess={handleAuthSuccess} />
           )}

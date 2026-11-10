@@ -22,11 +22,11 @@ Proyecto desarrollado con **Next.js 15+ (App Router)**, **TypeScript**, **Tailwi
    ```
    Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-## Acceso con correo, Google y Passkeys
+## Acceso con correo y Passkeys
 
 - El registro crea la cuenta mediante un enlace de confirmación enviado por correo. Para enviarlo, configura las variables `SUPABASE_SERVICE_ROLE_KEY` y las `SMTP_*` en `.env.local` (ver `.env.local.example`). Si no hay SMTP, en desarrollo se devuelve el enlace directamente.
-- El acceso por correo envía un código OTP mediante Supabase Auth. Para entregarlo a usuarios externos, configura un servidor SMTP propio en **Supabase → Authentication → Emails / SMTP**; el SMTP compartido de Supabase sirve solo para pruebas y restringe destinatarios. No uses la contraseña normal de Gmail como clave SMTP.
-- Para Google OAuth, activa Google en **Supabase → Authentication → Sign In / Providers** y registra allí el ID y secreto OAuth. En Google Cloud, la URI de redirección autorizada del cliente OAuth debe ser `https://your-project-ref.supabase.co/auth/v1/callback`.
+- El acceso disponible es con correo y contraseña o con una Passkey biométrica (Windows Hello, huella o PIN).
+- Al crear una cuenta, Supabase envía un enlace de confirmación por correo. Para entregarlo a usuarios externos, configura un servidor SMTP propio en **Supabase → Authentication → Emails / SMTP**; el SMTP de prueba restringe los destinatarios.
 - En **Supabase → Authentication → URL Configuration**, define `http://localhost:3000` como URL del sitio y permite `http://localhost:3000/auth/callback`. Cuando se despliegue, agrega también el dominio HTTPS de Vercel a esos valores.
 - Las Passkeys (huella, reconocimiento facial, PIN) requieren ejecutar la migración `supabase/migrations/20261110_passkeys_and_challenges.sql` y configurar `SUPABASE_SERVICE_ROLE_KEY`. Regístralas desde el panel tras iniciar sesión.
 
@@ -34,9 +34,8 @@ Proyecto desarrollado con **Next.js 15+ (App Router)**, **TypeScript**, **Tailwi
 
 - `app/page.tsx`: Landing page con el Gemelo Digital 3D, secciones y modal de login.
 - `app/dashboard/page.tsx`: Espacio privado tras autenticación exitosa.
-- `app/auth/callback/route.ts`: Manejador de intercambio de códigos OAuth (Google) y Magic Links.
+- `app/auth/callback/route.ts`: Manejador del enlace de confirmación de cuenta.
 - `components/hero/Greenhouse3D.tsx`: Lienzo 3D interactivo con órbita 360°, nodos sensores y tarjetas de telemetría.
 - `components/hero/SensorInspectorModal.tsx`: Inspector flotante con visor isométrico 3D.
-- `components/auth/LoginModal.tsx`: Modal Split Card con Google OAuth, Correo OTP y Passkeys.
-- `components/auth/OtpVerification.tsx`: Entrada de 6 dígitos con auto-pegado y temporizador.
+- `components/auth/LoginModal.tsx`: Modal de acceso con correo/contraseña y Passkeys.
 - `lib/supabase/`: Clientes de Supabase para servidor, navegador y middleware.
