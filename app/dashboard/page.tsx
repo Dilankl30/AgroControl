@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { AgroControlLogo } from '@/components/ui/AgroControlLogo';
 import { PasskeyRegister } from '@/components/auth/PasskeyRegister';
-import { ShieldCheck, LogOut, ArrowLeft, Cpu, Activity, Fingerprint, CheckCircle } from 'lucide-react';
+import { ShieldCheck, LogOut, ArrowLeft, Activity, CheckCircle } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
                 <span>Tus Métodos de Acceso</span>
               </h3>
               <p className="text-xs text-[#a0c7b9]">
-                Gestiona tus credenciales biométricas y dispositivos autorizados.
+                Registra y consulta las Passkeys vinculadas a tu cuenta.
               </p>
             </div>
             <span className="px-3 py-1 rounded-full bg-[#13795b]/30 text-xs font-semibold text-[#56f3bd] border border-[#56f3bd]/20">
@@ -133,34 +133,6 @@ export default async function DashboardPage() {
           </div>
 
           <PasskeyRegister />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 rounded-2xl bg-black/30 border border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Fingerprint className="w-5 h-5 text-[#56f3bd]" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-white">Dispositivo actual</div>
-                  <div className="text-xs text-[#a0c7b9]">Passkeys pendientes de implementar</div>
-                </div>
-              </div>
-              <span className="text-xs font-bold text-[#56f3bd]">Pendiente</span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-black/30 border border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Cpu className="w-5 h-5 text-[#56f3bd]" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-white">Esquema en Supabase</div>
-                  <div className="text-xs text-[#a0c7b9]">auth.users & agrocontrol_app.profiles</div>
-                </div>
-              </div>
-              <span className="text-xs font-bold text-[#56f3bd]">Sin verificar</span>
-            </div>
-          </div>
         </div>
       </main>
     </div>

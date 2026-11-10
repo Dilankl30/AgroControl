@@ -44,7 +44,7 @@ const BOT_KNOWLEDGE_BASE: { keywords: string[]; answer: string }[] = [
   {
     keywords: ['empezar', 'iniciar', 'login', 'acceso', 'cuenta', 'passkey', 'biometria', 'correo', 'contraseña', 'registro'],
     answer:
-      '🔐 Para acceder al sistema, haz clic en **"Iniciar sesión →"** en la barra superior. Puedes entrar con tu correo y contraseña o con la biometría de tu dispositivo (Windows Hello, Face ID o huella registrada como Passkey).',
+      '🔐 Para acceder al sistema, haz clic en **"Iniciar sesión →"** en la barra superior. Puedes entrar con tu correo y contraseña o con una Passkey. El dispositivo puede verificar con rostro, huella o su método local de desbloqueo.',
   },
   {
     keywords: ['impacto', 'objetivo', 'beneficio', 'rendimiento', 'agua', 'plagas', 'sostenibilidad'],

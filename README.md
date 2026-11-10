@@ -25,10 +25,14 @@ Proyecto desarrollado con **Next.js 15+ (App Router)**, **TypeScript**, **Tailwi
 ## Acceso con correo y Passkeys
 
 - El registro crea la cuenta mediante un enlace de confirmación enviado por correo. Para enviarlo, configura las variables `SUPABASE_SERVICE_ROLE_KEY` y las `SMTP_*` en `.env.local` (ver `.env.local.example`). Si no hay SMTP, en desarrollo se devuelve el enlace directamente.
-- El acceso disponible es con correo y contraseña o con una Passkey biométrica (Windows Hello, huella o PIN).
+- El acceso disponible es con correo y contraseña o con una Passkey. El dispositivo elige el método de verificación disponible (rostro, huella, PIN o bloqueo local); la aplicación nunca recibe los datos biométricos.
 - Al crear una cuenta, Supabase envía un enlace de confirmación por correo. Para entregarlo a usuarios externos, configura un servidor SMTP propio en **Supabase → Authentication → Emails / SMTP**; el SMTP de prueba restringe los destinatarios.
 - En **Supabase → Authentication → URL Configuration**, define `http://localhost:3000` como URL del sitio y permite `http://localhost:3000/auth/callback`. Cuando se despliegue, agrega también el dominio HTTPS de Vercel a esos valores.
-- Las Passkeys (huella, reconocimiento facial, PIN) requieren ejecutar la migración `supabase/migrations/20261110_passkeys_and_challenges.sql` y configurar `SUPABASE_SERVICE_ROLE_KEY`. Regístralas desde el panel tras iniciar sesión.
+- Las Passkeys usan Supabase Auth nativo y no requieren una clave `service_role` ni tablas públicas propias. En el Dashboard de Supabase, abre **Authentication → Passkeys**, habilita la función y configura:
+  - Relying Party Display Name: `AgroControl`
+  - Relying Party ID: `agro-control-nu.vercel.app` (mantenerlo estable; cambiarlo invalida las Passkeys registradas)
+  - Relying Party Origins: `https://agro-control-nu.vercel.app` y `http://localhost:3000` para desarrollo local
+- El usuario inicia sesión con correo y contraseña y registra su Passkey desde **Dashboard → Tus Métodos de Acceso**. La autenticación Passkey no pide el correo; el autenticador identifica la cuenta.
 
 ## 📁 Estructura del Proyecto
 

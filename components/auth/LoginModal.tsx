@@ -239,7 +239,7 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                           <span>Biometría / Passkey</span>
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#56f3bd] text-[#041f1b] font-black">FIDO2</span>
                         </div>
-                        <div className="text-xs font-normal text-[#94ffb1]">Windows Hello, huella o PIN</div>
+                        <div className="text-xs font-normal text-[#94ffb1]">Rostro, huella o bloqueo del dispositivo</div>
                       </div>
                     </div>
                     <ArrowRight className="w-4 h-4 text-[#56f3bd] group-hover:translate-x-1 transition-transform" />

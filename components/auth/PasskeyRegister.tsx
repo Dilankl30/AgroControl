@@ -1,82 +1,115 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Fingerprint, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
-import { startRegistration } from '@simplewebauthn/browser';
+import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/components/ui/Toast';
+
+type PasskeyItem = { id: string; friendly_name?: string; created_at: string; last_used_at?: string };
 
 export function PasskeyRegister() {
   const [loading, setLoading] = useState(false);
+  const [listLoading, setListLoading] = useState(true);
+  const [passkeys, setPasskeys] = useState<PasskeyItem[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const loadPasskeys = useCallback(async () => {
+    setListLoading(true);
+    const supabase = createClient();
+    const { data, error: listError } = await supabase.auth.passkey.list();
+    if (listError) {
+      setError(listError.message);
+    } else {
+      setPasskeys(data ?? []);
+    }
+    setListLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void loadPasskeys();
+  }, [loadPasskeys]);
 
   const handleRegister = async () => {
     setLoading(true);
     setError(null);
     setMsg(null);
     try {
-      const optRes = await fetch('/api/auth/passkey/register/options', { method: 'POST' });
-      const optJson = await optRes.json();
-      if (!optRes.ok) {
-        setLoading(false);
-        setError(optJson?.error || 'No se pudo iniciar el registro.');
-        return;
-      }
+      const supabase = createClient();
+      const { error: registerError } = await supabase.auth.registerPasskey();
+      if (registerError) throw registerError;
 
-      const attestation = await startRegistration({ optionsJSON: optJson });
-
-      const verifyRes = await fetch('/api/auth/passkey/register/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(attestation),
-      });
-      const verifyJson = await verifyRes.json();
-      if (!verifyRes.ok) {
-        setLoading(false);
-        setError(verifyJson?.error || 'Verificación fallida.');
-        return;
-      }
-
-      setLoading(false);
       setMsg('Passkey registrada correctamente en este dispositivo.');
-      toast('Passkey registrada. Ya puedes entrar con biometría.');
+      toast('Passkey registrada. Ya puedes entrar con el método de desbloqueo de tu dispositivo.');
+      await loadPasskeys();
     } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error registrando Passkey.';
+      const normalized = message.toLowerCase();
+      if (normalized.includes('not allowed') || normalized.includes('cancel')) {
+        setError('Registro cancelado o no permitido por el dispositivo.');
+      } else if (normalized.includes('passkey_disabled')) {
+        setError('El acceso con Passkey todavía no está activado en Supabase.');
+      } else {
+        setError(message);
+      }
+    } finally {
       setLoading(false);
-      const message = err instanceof Error ? err.message : 'Error registrando passkey.';
-      setError(message);
     }
   };
 
   return (
-    <div className="p-4 rounded-2xl bg-black/30 border border-white/10 flex items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-          <Fingerprint className="w-5 h-5 text-[#56f3bd]" />
+    <div className="p-4 rounded-2xl bg-black/30 border border-white/10 space-y-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+            <Fingerprint className="w-5 h-5 text-[#56f3bd]" />
+          </div>
+          <div>
+            <div className="text-sm font-bold text-white">Passkey de este dispositivo</div>
+            <div className="text-xs text-[#a0c7b9]">Rostro, huella o bloqueo local según el dispositivo</div>
+          </div>
         </div>
-        <div>
-          <div className="text-sm font-bold text-white">Registrar Passkey</div>
-          <div className="text-xs text-[#a0c7b9]">Huella, reconocimiento facial o PIN de este dispositivo</div>
-        </div>
+        <button
+          onClick={handleRegister}
+          disabled={loading || listLoading}
+          className="shrink-0 px-4 py-2 rounded-xl bg-[#13795b] hover:bg-[#1a9470] disabled:opacity-50 text-white text-xs font-bold transition-colors flex items-center gap-2"
+        >
+          {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Fingerprint className="w-3.5 h-3.5" />}
+          {loading ? 'Registrando...' : 'Registrar Passkey'}
+        </button>
       </div>
-      <button
-        onClick={handleRegister}
-        disabled={loading}
-        className="px-4 py-2 rounded-xl bg-[#13795b] hover:bg-[#1a9470] disabled:opacity-50 text-white text-xs font-bold transition-colors flex items-center gap-2"
-      >
-        {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Fingerprint className="w-3.5 h-3.5" />}
-        {loading ? 'Registrando...' : 'Registrar'}
-      </button>
+
       {error && (
-        <div className="text-xs text-red-400 flex items-center gap-1 mt-2">
-          <AlertCircle className="w-3.5 h-3.5" /> {error}
+        <div className="text-xs text-red-300 flex items-start gap-1.5" role="alert">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {error}
         </div>
       )}
       {msg && (
-        <div className="text-xs text-[#56f3bd] flex items-center gap-1 mt-2">
+        <div className="text-xs text-[#56f3bd] flex items-center gap-1.5" role="status">
           <CheckCircle className="w-3.5 h-3.5" /> {msg}
         </div>
       )}
+
+      <div className="border-t border-white/10 pt-3">
+        <div className="text-xs font-semibold text-[#b8d5cb] mb-2">Passkeys registradas</div>
+        {listLoading ? (
+          <div className="text-xs text-[#a0c7b9]">Consultando tu cuenta…</div>
+        ) : passkeys.length ? (
+          <ul className="space-y-2">
+            {passkeys.map((passkey) => (
+              <li key={passkey.id} className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs text-white">
+                <span>{passkey.friendly_name || 'Passkey de dispositivo'}</span>
+                <span className="text-[#a0c7b9]">
+                  Registrada {new Date(passkey.created_at).toLocaleDateString()}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-xs text-[#a0c7b9]">Aún no has registrado una Passkey.</div>
+        )}
+      </div>
     </div>
   );
 }
