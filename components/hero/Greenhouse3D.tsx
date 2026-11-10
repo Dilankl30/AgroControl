@@ -592,13 +592,13 @@ export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[620px] sm:h-[680px] rounded-[34px] overflow-hidden bg-[#0a352c]/80 border border-[#56f3bd]/25 shadow-[0_30px_90px_rgba(2,26,23,0.55)] backdrop-blur-xl select-none"
+      className="relative w-full h-[500px] min-[420px]:h-[520px] sm:h-[620px] xl:h-[680px] rounded-2xl sm:rounded-[34px] overflow-hidden bg-[#0a352c]/80 border border-[#56f3bd]/25 shadow-[0_30px_90px_rgba(2,26,23,0.55)] backdrop-blur-xl select-none"
     >
       {/* Sutil overlay de luz ambiental */}
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-[#56f3bd]/10 via-transparent to-black/30" />
 
       {/* Cabecera interna del Gemelo Digital */}
-      <div className="absolute top-6 left-7 right-7 flex items-center justify-between text-[#edf6f0] pointer-events-none z-20">
+      <div className="absolute top-4 sm:top-6 left-4 sm:left-7 right-4 sm:right-7 flex items-start justify-between gap-2 text-[#edf6f0] pointer-events-none z-20">
         <div>
           <div className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#d9fff0]">
             GEMELO DIGITAL - 3D
@@ -609,8 +609,8 @@ export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
         </div>
 
         {/* Badge Sistema Conectado y Vista */}
-        <div className="flex items-center gap-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#062923]/90 border border-[#56f3bd]/30 text-[11px] text-[#edf6f0] backdrop-blur-md shadow-lg">
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-[#062923]/90 border border-[#56f3bd]/30 text-[9px] sm:text-[11px] text-[#edf6f0] backdrop-blur-md shadow-lg">
             <span className="w-2 h-2 rounded-full bg-[#56f3bd] shadow-[0_0_8px_#56f3bd] animate-pulse" />
             <span className="font-bold tracking-wider uppercase text-[10px] text-[#b8d5cb]">
               SISTEMA CONECTADO
@@ -637,7 +637,7 @@ export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
       <button
         onClick={() => openComponent('light')}
         type="button"
-        className="absolute top-20 left-7 z-20 min-w-[150px] p-4 rounded-2xl bg-[#093c31]/85 hover:bg-[#0c4e40] border border-[#56f3bd]/25 hover:border-[#56f3bd]/45 shadow-xl backdrop-blur-md text-left transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+        className="hidden sm:block absolute top-20 left-7 z-20 min-w-[150px] p-4 rounded-2xl bg-[#093c31]/85 hover:bg-[#0c4e40] border border-[#56f3bd]/25 hover:border-[#56f3bd]/45 shadow-xl backdrop-blur-md text-left transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
       >
         <div className="flex items-center gap-1.5 text-xs text-[#a0ffca] mb-1 font-semibold">
           <Sun className="w-3.5 h-3.5 text-[#efc369]" />
@@ -651,7 +651,7 @@ export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
       <button
         onClick={() => openComponent('temp')}
         type="button"
-        className="absolute top-20 right-7 z-20 min-w-[150px] p-4 rounded-2xl bg-[#093c31]/85 hover:bg-[#0c4e40] border border-[#56f3bd]/25 hover:border-[#56f3bd]/45 shadow-xl backdrop-blur-md text-left transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+        className="hidden sm:block absolute top-20 right-7 z-20 min-w-[150px] p-4 rounded-2xl bg-[#093c31]/85 hover:bg-[#0c4e40] border border-[#56f3bd]/25 hover:border-[#56f3bd]/45 shadow-xl backdrop-blur-md text-left transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
       >
         <div className="flex items-center gap-1.5 text-xs text-[#a0ffca] mb-1 font-semibold">
           <Thermometer className="w-3.5 h-3.5 text-[#56f3bd]" />
@@ -684,9 +684,9 @@ export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
       />
 
       {/* Zona Inferior: Instrucción, Chips de Sensores y Controles de Cámara */}
-      <div className="absolute inset-x-7 bottom-5 z-20 flex flex-col gap-2.5 pointer-events-none">
+      <div className="absolute inset-x-3 sm:inset-x-7 bottom-3 sm:bottom-5 z-20 flex flex-col gap-2 sm:gap-2.5 pointer-events-none">
         {/* Instrucción */}
-        <div className="text-xs text-[#caeadc]/85 flex items-center gap-1.5 font-normal">
+        <div className="hidden sm:flex text-xs text-[#caeadc]/85 items-center gap-1.5 font-normal">
           <Sparkles className="w-3.5 h-3.5 text-[#56f3bd] shrink-0" />
           <span>Arrastra para girar · Haz clic en los sensores o tarjetas para abrir el detalle 3D</span>
         </div>
@@ -726,16 +726,16 @@ export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
         </div>
 
         {/* Fila Inferior: "EXPLORA EL ENTORNO" y Botones de Acción (SIN caracteres repetidos) */}
-        <div className="flex items-center justify-between pt-1 pointer-events-auto">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 pointer-events-auto">
           <div className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#b8d5cb]/70 hidden sm:block">
             EXPLORA EL ENTORNO
           </div>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 ml-auto w-full sm:w-auto">
             <button
               onClick={() => setHideRoof(!hideRoof)}
               type="button"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#082d25]/90 hover:bg-[#0c4438] text-white border border-[#56f3bd]/25 hover:border-[#56f3bd]/50 text-xs font-medium shadow-md backdrop-blur-md transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-xl bg-[#082d25]/90 hover:bg-[#0c4438] text-white border border-[#56f3bd]/25 hover:border-[#56f3bd]/50 text-[10px] sm:text-xs font-medium shadow-md backdrop-blur-md transition-all cursor-pointer"
             >
               {hideRoof ? (
                 <Eye className="w-3.5 h-3.5 text-[#56f3bd]" />
@@ -748,7 +748,7 @@ export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
             <button
               onClick={() => setAutoRotate(!autoRotate)}
               type="button"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#082d25]/90 hover:bg-[#0c4438] text-white border border-[#56f3bd]/25 hover:border-[#56f3bd]/50 text-xs font-medium shadow-md backdrop-blur-md transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-xl bg-[#082d25]/90 hover:bg-[#0c4438] text-white border border-[#56f3bd]/25 hover:border-[#56f3bd]/50 text-[10px] sm:text-xs font-medium shadow-md backdrop-blur-md transition-all cursor-pointer"
             >
               <RotateCw className={`w-3.5 h-3.5 text-[#56f3bd] ${autoRotate ? 'animate-spin' : ''}`} />
               <span>Girar: {autoRotate ? 'sí' : 'no'}</span>
@@ -757,7 +757,7 @@ export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
             <button
               onClick={resetCamera}
               type="button"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#082d25]/90 hover:bg-[#0c4438] text-white border border-[#56f3bd]/25 hover:border-[#56f3bd]/50 text-xs font-medium shadow-md backdrop-blur-md transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-xl bg-[#082d25]/90 hover:bg-[#0c4438] text-white border border-[#56f3bd]/25 hover:border-[#56f3bd]/50 text-[10px] sm:text-xs font-medium shadow-md backdrop-blur-md transition-all cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5 text-[#56f3bd]" />
               <span>Reiniciar vista</span>

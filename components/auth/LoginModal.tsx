@@ -130,13 +130,13 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       role="dialog"
       aria-modal="true"
       aria-labelledby="loginTitle"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-2 min-[380px]:p-3 sm:p-6 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
     >
       {/* Contenedor Split Card */}
-      <div className="relative w-full max-w-[960px] bg-white rounded-3xl overflow-hidden shadow-2xl grid grid-cols-1 md:grid-cols-[1.05fr_1fr] min-h-[580px]">
+      <div className="relative w-full max-w-[960px] max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-3rem)] bg-white rounded-2xl sm:rounded-3xl overflow-y-auto shadow-2xl grid grid-cols-1 md:grid-cols-[1.05fr_1fr] md:min-h-[580px]">
         {/* Columna Izquierda: Identidad y Contexto Operativo con fotografía real */}
         <div
-          className="relative p-8 sm:p-10 flex flex-col justify-between text-white bg-cover bg-center overflow-hidden"
+          className="relative hidden md:flex p-8 sm:p-10 flex-col justify-between text-white bg-cover bg-center overflow-hidden"
           style={{ backgroundImage: `url('/images/greenhouse-bg.jpg')` }}
         >
           {/* Overlay esmeralda profundo de marca */}
@@ -166,7 +166,7 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
         </div>
 
         {/* Columna Derecha: Formularios de Acceso */}
-        <div className="p-8 sm:p-10 flex flex-col justify-between bg-[#fbfdfc] relative">
+        <div className="min-w-0 p-5 min-[380px]:p-6 sm:p-10 flex flex-col justify-between bg-[#fbfdfc] relative">
           {/* Botón de Cierre */}
           <button
             onClick={onClose}

@@ -19,9 +19,9 @@ export function Navbar({ onOpenLogin }: { onOpenLogin: () => void }) {
   };
 
   return (
-    <header className="relative z-30 px-6 sm:px-12 pt-6 pb-2 flex items-center justify-between gap-6 max-w-[1540px] mx-auto">
+    <header className="relative z-30 px-4 sm:px-8 lg:px-12 pt-4 sm:pt-6 pb-2 flex items-center justify-between gap-3 sm:gap-6 max-w-[1540px] mx-auto">
       <Link href="#inicio" className="transition-opacity hover:opacity-90 flex items-center" aria-label="Inicio AgroControl">
-        <AgroControlLogo variant="light" className="h-10 w-auto" width={175} height={42} />
+        <AgroControlLogo variant="light" className="h-8 sm:h-10 w-auto" width={175} height={42} />
       </Link>
 
       {/* Navegación Desktop */}
@@ -71,7 +71,7 @@ export function Navbar({ onOpenLogin }: { onOpenLogin: () => void }) {
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           type="button"
-          className="md:hidden p-2.5 rounded-xl bg-white/10 text-white border border-white/15 cursor-pointer"
+          className="md:hidden min-h-11 min-w-11 p-2.5 rounded-xl bg-white/10 text-white border border-white/15 cursor-pointer"
           aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

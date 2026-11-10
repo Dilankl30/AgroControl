@@ -59,8 +59,8 @@ export function PasskeyRegister() {
   };
 
   return (
-    <div className="p-4 rounded-2xl bg-black/30 border border-white/10 space-y-4">
-      <div className="flex items-center justify-between gap-4">
+    <div className="min-w-0 p-3 sm:p-4 rounded-2xl bg-black/30 border border-white/10 space-y-4">
+      <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
             <Fingerprint className="w-5 h-5 text-[#56f3bd]" />
@@ -73,7 +73,7 @@ export function PasskeyRegister() {
         <button
           onClick={handleRegister}
           disabled={loading || listLoading}
-          className="shrink-0 px-4 py-2 rounded-xl bg-[#13795b] hover:bg-[#1a9470] disabled:opacity-50 text-white text-xs font-bold transition-colors flex items-center gap-2"
+          className="self-start min-[480px]:self-auto shrink-0 min-h-11 px-4 py-2 rounded-xl bg-[#13795b] hover:bg-[#1a9470] disabled:opacity-50 text-white text-xs font-bold transition-colors flex items-center gap-2"
         >
           {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Fingerprint className="w-3.5 h-3.5" />}
           {loading ? 'Registrando...' : 'Registrar Passkey'}

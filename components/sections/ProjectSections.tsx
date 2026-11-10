@@ -7,13 +7,13 @@ export function ProjectSections() {
   return (
     <div className="bg-[#f8fbf9] text-[#16332e] transition-colors">
       {/* 1. SECCIÓN: INFORMACIÓN DEL PROYECTO */}
-      <section id="informacion" className="scroll-mt-20 py-24 px-6 sm:px-12 border-b border-[#e2ece7]">
+      <section id="informacion" className="scroll-mt-20 py-16 sm:py-24 px-4 sm:px-8 lg:px-12 border-b border-[#e2ece7]">
         <div className="max-w-[1520px] mx-auto">
           <div className="max-w-3xl mb-16">
             <div className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-3">
               <span>Información General</span>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-[#093f33] mb-4">
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-[#093f33] mb-4">
               ¿Qué es AgroControl?
             </h2>
             <p className="text-lg text-[#4a6b62] leading-relaxed">
@@ -56,13 +56,13 @@ export function ProjectSections() {
       </section>
 
       {/* 2. SECCIÓN: TECNOLOGÍA */}
-      <section id="tecnologia" className="scroll-mt-20 py-24 px-6 sm:px-12 border-b border-[#e2ece7] bg-white">
+      <section id="tecnologia" className="scroll-mt-20 py-16 sm:py-24 px-4 sm:px-8 lg:px-12 border-b border-[#e2ece7] bg-white">
         <div className="max-w-[1520px] mx-auto">
           <div className="max-w-3xl mb-16">
             <div className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-3">
               <span>Stack Tecnológico</span>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-[#093f33] mb-4">
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-[#093f33] mb-4">
               Ingeniería y Hardware IoT
             </h2>
             <p className="text-lg text-[#4a6b62] leading-relaxed">
@@ -119,13 +119,13 @@ export function ProjectSections() {
       </section>
 
       {/* 3. SECCIÓN: IMPACTO */}
-      <section id="impacto" className="scroll-mt-20 py-24 px-6 sm:px-12 border-b border-[#e2ece7]">
+      <section id="impacto" className="scroll-mt-20 py-16 sm:py-24 px-4 sm:px-8 lg:px-12 border-b border-[#e2ece7]">
         <div className="max-w-[1520px] mx-auto">
           <div className="max-w-3xl mb-16">
             <div className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-3">
               <span>Sostenibilidad Agronómica</span>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-[#093f33] mb-4">
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-[#093f33] mb-4">
               Impacto y Resultados de Campo
             </h2>
             <p className="text-lg text-[#4a6b62] leading-relaxed">
@@ -162,13 +162,13 @@ export function ProjectSections() {
       </section>
 
       {/* 4. SECCIÓN: QUIÉNES SOMOS */}
-      <section id="quienes" className="scroll-mt-20 py-24 px-6 sm:px-12 bg-white">
+      <section id="quienes" className="scroll-mt-20 py-16 sm:py-24 px-4 sm:px-8 lg:px-12 bg-white">
         <div className="max-w-[1520px] mx-auto">
           <div className="max-w-3xl mb-16">
             <div className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-3">
               <span>Equipo de Investigación</span>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-[#093f33] mb-4">
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-[#093f33] mb-4">
               Vínculo Académico ESPOCH
             </h2>
             <p className="text-lg text-[#4a6b62] leading-relaxed">
