@@ -5,10 +5,10 @@ Proyecto desarrollado con **Next.js 15+ (App Router)**, **TypeScript**, **Tailwi
 ## 🚀 Inicio Rápido
 
 1. **Configurar variables de entorno:**
-   Copia el archivo `.env.local.example` a `.env.local` y coloca tu URL y clave de Supabase:
+   Copia `.env.local.example` a `.env.local` y reemplaza los valores por la URL y la clave pública (publishable/anon) del proyecto. No uses la clave `service_role` en el navegador ni la subas a GitHub.
    ```env
-   NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key-aqui
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-publishable-key
    NEXT_PUBLIC_SITE_URL=http://localhost:3000
    ```
 
@@ -21,6 +21,12 @@ Proyecto desarrollado con **Next.js 15+ (App Router)**, **TypeScript**, **Tailwi
    npm run dev
    ```
    Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
+## Acceso con correo y Google
+
+- El acceso por correo envía un código OTP mediante Supabase Auth. Para entregarlo a usuarios externos, configura un servidor SMTP propio en **Supabase → Authentication → Emails / SMTP**; el SMTP compartido de Supabase sirve solo para pruebas y restringe destinatarios. No uses la contraseña normal de Gmail como clave SMTP.
+- Para Google OAuth, activa Google en **Supabase → Authentication → Sign In / Providers** y registra allí el ID y secreto OAuth. En Google Cloud, la URI de redirección autorizada del cliente OAuth debe ser `https://your-project-ref.supabase.co/auth/v1/callback`.
+- En **Supabase → Authentication → URL Configuration**, define `http://localhost:3000` como URL del sitio y permite `http://localhost:3000/auth/callback`. Cuando se despliegue, agrega también el dominio HTTPS de Vercel a esos valores.
 
 ## 📁 Estructura del Proyecto
 
