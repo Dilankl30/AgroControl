@@ -25,7 +25,8 @@ Proyecto desarrollado con **Next.js 15+ (App Router)**, **TypeScript**, **Tailwi
 ## Acceso con correo y Passkeys
 
 - El registro crea una cuenta pendiente y envía un código OTP de 6 dígitos al correo usando Supabase Auth. La persona lo ingresa en la pantalla para verificar la cuenta; al completar la verificación inicia sesión y puede registrar una Passkey desde el Dashboard.
-- Configura el remitente en **Supabase → Authentication → Emails → SMTP Settings** y usa `{{ .Token }}` en la plantilla **Confirm sign up**. No se necesita una clave `service_role` ni credenciales SMTP en Vercel.
+- La recuperación permite solicitar un código de un solo uso, validarlo como recuperación y guardar una contraseña nueva desde la aplicación. Usa `{{ .Token }}` también en la plantilla **Reset password**.
+- Configura el remitente en **Supabase → Authentication → Emails → SMTP Settings** y usa `{{ .Token }}` en las plantillas **Confirm sign up** y **Reset password**. No se necesita una clave `service_role` ni credenciales SMTP en Vercel.
 - El acceso disponible es con correo y contraseña o con una Passkey. El dispositivo elige el método de verificación disponible (rostro, huella, PIN o bloqueo local); la aplicación nunca recibe los datos biométricos.
 - En **Supabase → Authentication → Sign In / Providers**, mantén habilitados los registros por correo y **Confirm email**. El SMTP del proyecto ya está configurado para entregar mensajes a los usuarios.
 - En **Supabase → Authentication → URL Configuration**, define `http://localhost:3000` como URL del sitio y permite `http://localhost:3000/auth/callback`. Cuando se despliegue, agrega también el dominio HTTPS de Vercel a esos valores.
@@ -40,7 +41,7 @@ Proyecto desarrollado con **Next.js 15+ (App Router)**, **TypeScript**, **Tailwi
 
 - `app/page.tsx`: Landing page con el Gemelo Digital 3D, secciones y modal de login.
 - `app/dashboard/page.tsx`: Espacio privado tras autenticación exitosa.
-- `components/auth/LoginModal.tsx`: Registro, verificación OTP, inicio de sesión y acceso con Passkey.
+- `components/auth/LoginModal.tsx`: Registro, verificación OTP, recuperación de contraseña, inicio de sesión y acceso con Passkey.
 - `app/auth/callback/route.ts`: Manejador del retorno de autenticación por enlace.
 - `components/hero/Greenhouse3D.tsx`: Lienzo 3D interactivo con órbita 360°, nodos sensores y tarjetas de telemetría.
 - `components/hero/SensorInspectorModal.tsx`: Inspector flotante con visor isométrico 3D.

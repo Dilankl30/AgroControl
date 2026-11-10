@@ -8,7 +8,7 @@ import { PasskeyAuth } from '@/components/auth/PasskeyAuth';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/components/ui/Toast';
 
-type AuthStep = 'select' | 'email_password' | 'passkey' | 'register' | 'verify_email';
+type AuthStep = 'select' | 'email_password' | 'passkey' | 'register' | 'verify_email' | 'recover_password' | 'reset_password';
 
 export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const router = useRouter();
@@ -17,6 +17,8 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [emailCode, setEmailCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -76,8 +78,8 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       setErrorMsg('Por favor escribe un correo electrónico válido.');
       return;
     }
-    if (!password || password.length < 6) {
-      setErrorMsg('La contraseña debe tener al menos 6 caracteres.');
+    if (!password || password.length < 8) {
+      setErrorMsg('La contraseña debe tener al menos 8 caracteres.');
       return;
     }
     if (password !== confirmPassword) {
@@ -166,6 +168,80 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       setLoading(false);
       const message = err instanceof Error ? err.message : 'No se pudo verificar el correo.';
       setErrorMsg(message);
+    }
+  };
+
+  const handleRequestPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setErrorMsg('Escribe un correo electrónico válido.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail);
+      if (error) throw error;
+
+      setEmailCode('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setStep('reset_password');
+      toast('Si existe una cuenta con ese correo, recibirás un código para recuperar el acceso.');
+    } catch {
+      setErrorMsg('No se pudo solicitar el código. Espera un momento e inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = email.trim();
+    const token = emailCode.replace(/\D/g, '');
+
+    if (token.length !== 6) {
+      setErrorMsg('Escribe el código de 6 dígitos que enviamos a tu correo.');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setErrorMsg('La nueva contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setErrorMsg('Las contraseñas no coinciden.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const supabase = createClient();
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token,
+        type: 'recovery',
+      });
+      if (verifyError || !data.session) {
+        setErrorMsg('El código no es válido o ya venció. Solicita otro e inténtalo de nuevo.');
+        return;
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) throw updateError;
+
+      setEmailCode('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      toast('Contraseña actualizada. Ya puedes entrar a AgroControl.');
+      handleAuthSuccess();
+    } catch {
+      setErrorMsg('No se pudo cambiar la contraseña. Solicita un código nuevo e inténtalo otra vez.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -365,6 +441,16 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                       />
                       <Lock className="w-4 h-4 text-[#8ea49c] absolute right-4 top-3.5 pointer-events-none" />
                     </div>
+                    <button
+                      onClick={() => {
+                        setErrorMsg(null);
+                        setStep('recover_password');
+                      }}
+                      type="button"
+                      className="mt-2 text-xs font-bold text-[#13795b] hover:underline cursor-pointer"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
                   </div>
 
                   {errorMsg && (
@@ -478,7 +564,9 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                       <input
                         type="password"
                         required
-                        placeholder="Mínimo 6 caracteres"
+                        minLength={8}
+                        autoComplete="new-password"
+                        placeholder="Mínimo 8 caracteres"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
@@ -610,6 +698,166 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                   className="mt-3 font-bold text-[#13795b] hover:underline cursor-pointer"
                 >
                   Volver al registro
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 'recover_password' && (
+            <div className="flex flex-col h-full justify-between animate-in fade-in duration-200">
+              <div>
+                <button
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setStep('email_password');
+                  }}
+                  type="button"
+                  className="text-xs font-semibold text-[#527068] hover:text-[#093f33] transition-colors mb-6 cursor-pointer"
+                >
+                  ← Volver al inicio de sesión
+                </button>
+                <div className="text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-2">
+                  Recuperar acceso
+                </div>
+                <h2 id="loginTitle" className="text-3xl sm:text-4xl font-black text-[#093f33] mb-3">
+                  Restablece tu contraseña.
+                </h2>
+                <p className="text-sm text-[#527068] leading-relaxed mb-6">
+                  Te enviaremos un código de un solo uso al correo asociado a tu cuenta.
+                </p>
+
+                <form onSubmit={handleRequestPasswordReset} className="space-y-4">
+                  <div>
+                    <label htmlFor="recovery-email" className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
+                      Correo electrónico
+                    </label>
+                    <input
+                      id="recovery-email"
+                      type="email"
+                      required
+                      autoComplete="email"
+                      placeholder="Escribe tu correo"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                    />
+                  </div>
+
+                  {errorMsg && (
+                    <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium leading-relaxed flex items-start gap-2" role="alert">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{errorMsg}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading || !email.trim()}
+                    className="w-full min-h-12 py-3 rounded-2xl bg-[#093f33] hover:bg-[#0c4e40] disabled:opacity-50 text-white font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <><span>Enviar código</span><ArrowRight className="w-4 h-4" /></>}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {step === 'reset_password' && (
+            <div className="flex flex-col h-full justify-between animate-in fade-in duration-200">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#13795b]/10 flex items-center justify-center text-[#13795b] mb-5">
+                  <Mail className="w-6 h-6" />
+                </div>
+                <div className="text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-2">
+                  Verificación de recuperación
+                </div>
+                <h2 id="loginTitle" className="text-3xl sm:text-4xl font-black text-[#093f33] mb-3">
+                  Crea una contraseña nueva.
+                </h2>
+                <p className="text-sm text-[#527068] leading-relaxed mb-6">
+                  Ingresa el código enviado a <span className="font-bold text-[#093f33] break-all">{email}</span> y elige una contraseña nueva.
+                </p>
+
+                <form onSubmit={handleResetPassword} className="space-y-4">
+                  <div>
+                    <label htmlFor="recovery-code" className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
+                      Código de recuperación
+                    </label>
+                    <input
+                      id="recovery-code"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      pattern="[0-9]{6}"
+                      maxLength={6}
+                      required
+                      placeholder="123456"
+                      value={emailCode}
+                      onChange={(event) => setEmailCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] text-center font-bold text-xl tracking-[0.45em] focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="new-password" className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
+                      Nueva contraseña
+                    </label>
+                    <input
+                      id="new-password"
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={8}
+                      required
+                      placeholder="Mínimo 8 caracteres"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="confirm-new-password" className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
+                      Confirmar contraseña nueva
+                    </label>
+                    <input
+                      id="confirm-new-password"
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={8}
+                      required
+                      placeholder="Repite la contraseña nueva"
+                      value={confirmNewPassword}
+                      onChange={(event) => setConfirmNewPassword(event.target.value)}
+                      className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                    />
+                  </div>
+
+                  {errorMsg && (
+                    <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium leading-relaxed flex items-start gap-2" role="alert">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{errorMsg}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading || emailCode.length !== 6 || newPassword.length < 8 || !confirmNewPassword}
+                    className="w-full min-h-12 py-3 rounded-2xl bg-[#093f33] hover:bg-[#0c4e40] disabled:opacity-50 text-white font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <><span>Guardar contraseña nueva</span><ArrowRight className="w-4 h-4" /></>}
+                  </button>
+                </form>
+              </div>
+
+              <div className="pt-5 mt-5 border-t border-[#e2ece7] text-center text-xs text-[#527068]">
+                ¿No llegó el código?{' '}
+                <button
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setStep('recover_password');
+                  }}
+                  type="button"
+                  className="font-bold text-[#13795b] hover:underline cursor-pointer"
+                >
+                  Solicitar otro
                 </button>
               </div>
             </div>
