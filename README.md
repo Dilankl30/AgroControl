@@ -31,7 +31,8 @@ Proyecto desarrollado con **Next.js 15+ (App Router)**, **TypeScript**, **Tailwi
 - Las Passkeys usan Supabase Auth nativo y no requieren una clave `service_role` ni tablas públicas propias. En el Dashboard de Supabase, abre **Authentication → Passkeys**, habilita la función y configura:
   - Relying Party Display Name: `AgroControl`
   - Relying Party ID: `agro-control-nu.vercel.app` (mantenerlo estable; cambiarlo invalida las Passkeys registradas)
-  - Relying Party Origins: `https://agro-control-nu.vercel.app` y `http://localhost:3000` para desarrollo local
+  - Relying Party Origins: `https://agro-control-nu.vercel.app`
+- Para probar Passkeys en desarrollo local, usa un proyecto Supabase separado con Relying Party ID `localhost` y origen `http://localhost:3000`; no mezcles ambos dominios bajo el RP ID de producción.
 - El usuario inicia sesión con correo y contraseña y registra su Passkey desde **Dashboard → Tus Métodos de Acceso**. La autenticación Passkey no pide el correo; el autenticador identifica la cuenta.
 
 ## 📁 Estructura del Proyecto
