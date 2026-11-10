@@ -25,6 +25,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!isEmailConfigured()) {
+      return NextResponse.json(
+        { error: 'El envío de correo no está configurado. Completa las variables SMTP del servidor.' },
+        { status: 503 }
+      );
+    }
+
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const admin = createAdminClient();
 
@@ -38,40 +45,33 @@ export async function POST(request: Request) {
       },
     });
 
-    if (error || !data?.properties?.action_link) {
+    if (error || !data?.properties?.email_otp) {
       return NextResponse.json(
         { error: error?.message || 'No se pudo crear la cuenta.' },
         { status: 400 }
       );
     }
 
-    const link = data.properties.action_link;
-
-    if (isEmailConfigured()) {
-      await sendEmail({
-        to: email,
-        subject: 'Confirma tu cuenta de AgroControl',
-        text: `Hola, confirma tu cuenta abriendo este enlace: ${link}`,
-        html: `
-          <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;">
-            <h2 style="color:#093f33;">Bienvenido a AgroControl</h2>
-            <p>Para activar tu cuenta, confirma tu correo electrónico haciendo clic en el siguiente botón:</p>
-            <p style="text-align:center;margin:24px 0;">
-              <a href="${link}" style="display:inline-block;padding:12px 24px;background:#093f33;color:#fff;text-decoration:none;border-radius:12px;font-weight:bold;">Confirmar cuenta</a>
-            </p>
-            <p style="font-size:12px;color:#527068;">Si no solicitaste esta cuenta, ignora este mensaje.</p>
-          </div>
-        `,
-      });
-    }
+    const code = data.properties.email_otp;
+    await sendEmail({
+      to: email,
+      subject: 'Tu código de verificación de AgroControl',
+      text: `Tu código de verificación de AgroControl es ${code}. Introdúcelo en la pantalla de registro para confirmar tu correo. Si no solicitaste esta cuenta, ignora este mensaje.`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#16332e;">
+          <h2 style="color:#093f33;">Verifica tu correo</h2>
+          <p>Usa este código para confirmar tu cuenta de AgroControl:</p>
+          <p style="margin:28px 0;text-align:center;">
+            <span style="display:inline-block;padding:14px 24px;border-radius:14px;background:#eaf7f0;color:#093f33;font-size:32px;font-weight:bold;letter-spacing:8px;">${code}</span>
+          </p>
+          <p>Ingresa el código en la pantalla de registro. Si no solicitaste esta cuenta, ignora este mensaje.</p>
+        </div>
+      `,
+    });
 
     return NextResponse.json({
       ok: true,
-      message: isEmailConfigured()
-        ? 'Te enviamos un correo para confirmar tu cuenta.'
-        : 'Cuenta creada. Configura SMTP para enviar el correo de confirmación.',
-      // Solo en desarrollo: devolver el enlace si no hay SMTP
-      devLink: isEmailConfigured() ? undefined : link,
+      message: 'Te enviamos un código de 6 dígitos para confirmar tu correo.',
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Error inesperado.';

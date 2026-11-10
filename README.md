@@ -24,9 +24,10 @@ Proyecto desarrollado con **Next.js 15+ (App Router)**, **TypeScript**, **Tailwi
 
 ## Acceso con correo y Passkeys
 
-- El registro crea la cuenta mediante un enlace de confirmación enviado por correo. Para enviarlo, configura las variables `SUPABASE_SERVICE_ROLE_KEY` y las `SMTP_*` en `.env.local` (ver `.env.local.example`). Si no hay SMTP, en desarrollo se devuelve el enlace directamente.
+- El registro crea una cuenta pendiente y envía un código OTP de 6 dígitos al correo. La persona lo ingresa en la pantalla para verificar la cuenta; al completar la verificación inicia sesión y puede registrar una Passkey desde el Dashboard.
+- El envío de códigos requiere `SUPABASE_SERVICE_ROLE_KEY` y todas las variables `SMTP_*` configuradas solo en el servidor (`.env.local` para desarrollo y variables de entorno de Vercel para producción). La clave administrativa nunca se usa desde el navegador. Si falta la configuración, el registro informa el problema y no confirma que el código fue enviado.
 - El acceso disponible es con correo y contraseña o con una Passkey. El dispositivo elige el método de verificación disponible (rostro, huella, PIN o bloqueo local); la aplicación nunca recibe los datos biométricos.
-- Al crear una cuenta, Supabase envía un enlace de confirmación por correo. Para entregarlo a usuarios externos, configura un servidor SMTP propio en **Supabase → Authentication → Emails / SMTP**; el SMTP de prueba restringe los destinatarios.
+- El código se genera en Supabase Auth y se entrega usando el servidor SMTP configurado en la aplicación. Comprueba que el proveedor permita enviar al correo de registro y que `SMTP_FROM` pertenezca a un remitente autorizado por ese proveedor.
 - En **Supabase → Authentication → URL Configuration**, define `http://localhost:3000` como URL del sitio y permite `http://localhost:3000/auth/callback`. Cuando se despliegue, agrega también el dominio HTTPS de Vercel a esos valores.
 - Las Passkeys usan Supabase Auth nativo y no requieren una clave `service_role` ni tablas públicas propias. En el Dashboard de Supabase, abre **Authentication → Passkeys**, habilita la función y configura:
   - Relying Party Display Name: `AgroControl`
@@ -39,7 +40,8 @@ Proyecto desarrollado con **Next.js 15+ (App Router)**, **TypeScript**, **Tailwi
 
 - `app/page.tsx`: Landing page con el Gemelo Digital 3D, secciones y modal de login.
 - `app/dashboard/page.tsx`: Espacio privado tras autenticación exitosa.
-- `app/auth/callback/route.ts`: Manejador del enlace de confirmación de cuenta.
+- `app/api/auth/register/route.ts`: Crea la cuenta pendiente y envía el OTP de verificación.
+- `app/auth/callback/route.ts`: Manejador del retorno de autenticación por enlace.
 - `components/hero/Greenhouse3D.tsx`: Lienzo 3D interactivo con órbita 360°, nodos sensores y tarjetas de telemetría.
 - `components/hero/SensorInspectorModal.tsx`: Inspector flotante con visor isométrico 3D.
 - `components/auth/LoginModal.tsx`: Modal de acceso con correo/contraseña y Passkeys.

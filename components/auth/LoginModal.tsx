@@ -8,7 +8,7 @@ import { PasskeyAuth } from '@/components/auth/PasskeyAuth';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/components/ui/Toast';
 
-type AuthStep = 'select' | 'email_password' | 'passkey' | 'register';
+type AuthStep = 'select' | 'email_password' | 'passkey' | 'register' | 'verify_email';
 
 export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const router = useRouter();
@@ -16,6 +16,7 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [emailCode, setEmailCode] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -105,22 +106,60 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
         return;
       }
 
-      // Si el servidor devuelve un enlace de desarrollo (sin SMTP), usarlo directamente
-      if (json.devLink) {
-        toast('Cuenta creada. Abriendo enlace de confirmación...');
-        window.location.href = json.devLink;
+      setLoading(false);
+      setEmailCode('');
+      setPassword('');
+      setConfirmPassword('');
+      setErrorMsg(null);
+      setStep('verify_email');
+      toast(json?.message || 'Revisa tu correo e ingresa el código de verificación.');
+    } catch (err: unknown) {
+      setLoading(false);
+      const message = err instanceof Error ? err.message : 'Error al registrarse';
+      setErrorMsg(message);
+    }
+  };
+
+  const handleVerifyEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = email.trim();
+    const token = emailCode.replace(/\D/g, '');
+
+    if (token.length !== 6) {
+      setErrorMsg('Escribe el código de 6 dígitos que enviamos a tu correo.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token,
+        type: 'signup',
+      });
+
+      if (error) {
+        setLoading(false);
+        setErrorMsg('El código no es válido o ya venció. Revisa el correo e inténtalo otra vez.');
         return;
       }
 
       setLoading(false);
-      toast(json?.message || 'Cuenta creada. Revisa tu correo para confirmar tu dirección.');
-      setPassword('');
-      setConfirmPassword('');
-      setErrorMsg(null);
-      setStep('select');
+      setEmailCode('');
+      if (data.session) {
+        toast('Correo verificado. Tu cuenta ya está lista.');
+        handleAuthSuccess();
+        return;
+      }
+
+      toast('Correo verificado. Ya puedes iniciar sesión.');
+      setStep('email_password');
     } catch (err: unknown) {
       setLoading(false);
-      const message = err instanceof Error ? err.message : 'Error al registrarse';
+      const message = err instanceof Error ? err.message : 'No se pudo verificar el correo.';
       setErrorMsg(message);
     }
   };
@@ -495,6 +534,77 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                   className="font-bold text-[#13795b] hover:underline cursor-pointer"
                 >
                   Iniciar sesión →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 'verify_email' && (
+            <div className="flex flex-col h-full justify-between animate-in fade-in duration-200">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#13795b]/10 flex items-center justify-center text-[#13795b] mb-5">
+                  <Mail className="w-6 h-6" />
+                </div>
+                <div className="text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-2">
+                  Confirma tu correo
+                </div>
+                <h2 id="loginTitle" className="text-3xl sm:text-4xl font-black text-[#093f33] mb-3">
+                  Revisa tu bandeja.
+                </h2>
+                <p className="text-sm text-[#527068] leading-relaxed mb-6">
+                  Enviamos un código de 6 dígitos a{' '}
+                  <span className="font-bold text-[#093f33] break-all">{email}</span>. Escríbelo para verificar tu cuenta.
+                </p>
+
+                <form onSubmit={handleVerifyEmail} className="space-y-4">
+                  <div>
+                    <label htmlFor="email-verification-code" className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
+                      Código de verificación
+                    </label>
+                    <input
+                      id="email-verification-code"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      pattern="[0-9]{6}"
+                      maxLength={6}
+                      required
+                      placeholder="123456"
+                      value={emailCode}
+                      onChange={(event) => setEmailCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="w-full px-4 py-4 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] text-center font-bold text-2xl tracking-[0.45em] focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                    />
+                  </div>
+
+                  {errorMsg && (
+                    <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium leading-relaxed flex items-start gap-2" role="alert">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{errorMsg}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading || emailCode.length !== 6}
+                    className="w-full min-h-12 py-3 rounded-2xl bg-[#093f33] hover:bg-[#0c4e40] disabled:opacity-50 text-white font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <><span>Verificar correo</span><ArrowRight className="w-4 h-4" /></>}
+                  </button>
+                </form>
+              </div>
+
+              <div className="pt-6 mt-6 border-t border-[#e2ece7] text-center text-xs text-[#527068]">
+                <p>Si no aparece, revisa la carpeta de correo no deseado.</p>
+                <button
+                  onClick={() => {
+                    setEmailCode('');
+                    setErrorMsg(null);
+                    setStep('register');
+                  }}
+                  type="button"
+                  className="mt-3 font-bold text-[#13795b] hover:underline cursor-pointer"
+                >
+                  Volver al registro
                 </button>
               </div>
             </div>
