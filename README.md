@@ -22,11 +22,13 @@ Proyecto desarrollado con **Next.js 15+ (App Router)**, **TypeScript**, **Tailwi
    ```
    Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-## Acceso con correo y Google
+## Acceso con correo, Google y Passkeys
 
+- El registro crea la cuenta mediante un enlace de confirmación enviado por correo. Para enviarlo, configura las variables `SUPABASE_SERVICE_ROLE_KEY` y las `SMTP_*` en `.env.local` (ver `.env.local.example`). Si no hay SMTP, en desarrollo se devuelve el enlace directamente.
 - El acceso por correo envía un código OTP mediante Supabase Auth. Para entregarlo a usuarios externos, configura un servidor SMTP propio en **Supabase → Authentication → Emails / SMTP**; el SMTP compartido de Supabase sirve solo para pruebas y restringe destinatarios. No uses la contraseña normal de Gmail como clave SMTP.
 - Para Google OAuth, activa Google en **Supabase → Authentication → Sign In / Providers** y registra allí el ID y secreto OAuth. En Google Cloud, la URI de redirección autorizada del cliente OAuth debe ser `https://your-project-ref.supabase.co/auth/v1/callback`.
 - En **Supabase → Authentication → URL Configuration**, define `http://localhost:3000` como URL del sitio y permite `http://localhost:3000/auth/callback`. Cuando se despliegue, agrega también el dominio HTTPS de Vercel a esos valores.
+- Las Passkeys (huella, reconocimiento facial, PIN) requieren ejecutar la migración `supabase/migrations/20261110_passkeys_and_challenges.sql` y configurar `SUPABASE_SERVICE_ROLE_KEY`. Regístralas desde el panel tras iniciar sesión.
 
 ## 📁 Estructura del Proyecto
 

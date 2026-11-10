@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { AgroControlLogo } from '@/components/ui/AgroControlLogo';
+import { PasskeyRegister } from '@/components/auth/PasskeyRegister';
 import { ShieldCheck, LogOut, ArrowLeft, Cpu, Activity, Fingerprint, CheckCircle } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -130,6 +131,8 @@ export default async function DashboardPage() {
               Autenticación FIDO2 / WebAuthn
             </span>
           </div>
+
+          <PasskeyRegister />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-2xl bg-black/30 border border-white/10 flex items-center justify-between">

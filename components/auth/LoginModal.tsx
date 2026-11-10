@@ -89,37 +89,32 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     setErrorMsg(null);
 
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password,
-        options: {
-          data: {
-            full_name: fullName.trim() || undefined,
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: cleanEmail,
+          password,
+          fullName: fullName.trim(),
+        }),
       });
+      const json = await res.json();
 
-      if (error) {
+      if (!res.ok) {
         setLoading(false);
-        setErrorMsg(error.message || 'No se pudo crear la cuenta. Inténtalo de nuevo.');
+        setErrorMsg(json?.error || 'No se pudo crear la cuenta. Inténtalo de nuevo.');
         return;
       }
 
-      // Si Supabase devuelve sesión inmediata (confirmación desactivada)
-      if (data.session) {
-        toast('¡Cuenta creada con éxito! Abriendo panel de control 🌱');
-        setTimeout(() => {
-          setLoading(false);
-          handleAuthSuccess();
-        }, 400);
+      // Si el servidor devuelve un enlace de desarrollo (sin SMTP), usarlo directamente
+      if (json.devLink) {
+        toast('Cuenta creada. Abriendo enlace de confirmación...');
+        window.location.href = json.devLink;
         return;
       }
 
-      // Si requiere confirmación por correo
       setLoading(false);
-      toast('Cuenta creada. Revisa tu correo para confirmar tu dirección y luego inicia sesión.');
+      toast(json?.message || 'Cuenta creada. Revisa tu correo para confirmar tu dirección.');
       setPassword('');
       setConfirmPassword('');
       setErrorMsg(null);
