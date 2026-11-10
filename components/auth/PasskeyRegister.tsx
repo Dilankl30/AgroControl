@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Fingerprint, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
+import { Fingerprint, RefreshCw, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/components/ui/Toast';
 
@@ -9,6 +9,7 @@ type PasskeyItem = { id: string; friendly_name?: string; created_at: string; las
 
 export function PasskeyRegister() {
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [listLoading, setListLoading] = useState(true);
   const [passkeys, setPasskeys] = useState<PasskeyItem[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
@@ -58,6 +59,32 @@ export function PasskeyRegister() {
     }
   };
 
+  const handleDelete = async (passkey: PasskeyItem) => {
+    const name = passkey.friendly_name || 'esta Passkey';
+    const confirmed = window.confirm(
+      `¿Eliminar ${name} de tu cuenta AgroControl? Este dispositivo dejará de poder iniciar sesión con esa Passkey. Si es la única registrada, aún podrás entrar con tu correo y contraseña.`,
+    );
+    if (!confirmed) return;
+
+    setDeletingId(passkey.id);
+    setError(null);
+    setMsg(null);
+    try {
+      const supabase = createClient();
+      const { error: deleteError } = await supabase.auth.passkey.delete({ passkeyId: passkey.id });
+      if (deleteError) throw deleteError;
+
+      setPasskeys((current) => current.filter((item) => item.id !== passkey.id));
+      setMsg('Passkey eliminada de tu cuenta.');
+      toast('Passkey eliminada de AgroControl.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error eliminando la Passkey.';
+      setError(message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="min-w-0 p-3 sm:p-4 rounded-2xl bg-black/30 border border-white/10 space-y-4">
       <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between gap-3">
@@ -72,7 +99,7 @@ export function PasskeyRegister() {
         </div>
         <button
           onClick={handleRegister}
-          disabled={loading || listLoading}
+          disabled={loading || listLoading || deletingId !== null}
           className="self-start min-[480px]:self-auto shrink-0 min-h-11 px-4 py-2 rounded-xl bg-[#13795b] hover:bg-[#1a9470] disabled:opacity-50 text-white text-xs font-bold transition-colors flex items-center gap-2"
         >
           {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Fingerprint className="w-3.5 h-3.5" />}
@@ -102,11 +129,27 @@ export function PasskeyRegister() {
         ) : passkeys.length ? (
           <ul className="space-y-2">
             {passkeys.map((passkey) => (
-              <li key={passkey.id} className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs text-white">
-                <span>{passkey.friendly_name || 'Passkey de dispositivo'}</span>
-                <span className="text-[#a0c7b9]">
-                  Registrada {new Date(passkey.created_at).toLocaleDateString()}
-                </span>
+              <li key={passkey.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs text-white">
+                <div className="min-w-0">
+                  <div className="break-words">{passkey.friendly_name || 'Passkey de dispositivo'}</div>
+                  <div className="text-[#a0c7b9]">
+                    Registrada {new Date(passkey.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void handleDelete(passkey)}
+                  disabled={deletingId !== null || loading}
+                  aria-label={`Eliminar ${passkey.friendly_name || 'Passkey de dispositivo'}`}
+                  title="Eliminar Passkey"
+                  className="ml-auto inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-red-300/20 text-red-200 hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {deletingId === passkey.id ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                </button>
               </li>
             ))}
           </ul>
