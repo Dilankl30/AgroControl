@@ -8,12 +8,11 @@ export function Footer() {
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <AgroControlLogo variant="light" className="h-6 sm:h-7 w-auto shrink-0" />
           <span className="text-xs text-white/50 border-l border-white/20 pl-3">
-            Gemelo Digital 3D & Monitoreo Agrícola
+            Sistema Web de Monitoreo IoT Agrícola
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-6 text-xs text-white/60">
-          <span>ESPOCH · Investigación Aplicada</span>
-          <span>Facultad de Recursos Naturales</span>
+          <span>ESPOCH Sede Orellana · TI</span>
           <span>© 2026 AgroControl</span>
         </div>
       </div>

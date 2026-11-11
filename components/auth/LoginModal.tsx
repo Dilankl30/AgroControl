@@ -2,24 +2,25 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Mail, Fingerprint, ShieldCheck, ArrowRight, RefreshCw, Lock, AlertCircle, User } from 'lucide-react';
+import { X, Mail, Fingerprint, ShieldCheck, ArrowRight, RefreshCw, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { AgroControlLogo } from '@/components/ui/AgroControlLogo';
 import { PasskeyAuth } from '@/components/auth/PasskeyAuth';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/components/ui/Toast';
 
-type AuthStep = 'select' | 'email_password' | 'passkey' | 'register' | 'verify_email' | 'recover_password' | 'reset_password';
+type AuthStep = 'select' | 'email_password' | 'passkey' | 'recover_password' | 'reset_password';
 
 export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const router = useRouter();
   const [step, setStep] = useState<AuthStep>('select');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [emailCode, setEmailCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -66,107 +67,6 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     } catch (err: unknown) {
       setLoading(false);
       const message = err instanceof Error ? err.message : 'Error al iniciar sesión';
-      setErrorMsg(message);
-    }
-  };
-
-  // Método 1b: Registrarse con Correo y Contraseña
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanEmail = email.trim();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
-      setErrorMsg('Por favor escribe un correo electrónico válido.');
-      return;
-    }
-    if (!password || password.length < 8) {
-      setErrorMsg('La contraseña debe tener al menos 8 caracteres.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setErrorMsg('Las contraseñas no coinciden.');
-      return;
-    }
-
-    setLoading(true);
-    setErrorMsg(null);
-
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password,
-        options: {
-          data: fullName.trim() ? { full_name: fullName.trim() } : {},
-        },
-      });
-
-      if (error) {
-        setLoading(false);
-        setErrorMsg('No se pudo crear la cuenta. Revisa los datos e inténtalo de nuevo.');
-        return;
-      }
-
-      setLoading(false);
-      setEmailCode('');
-      setPassword('');
-      setConfirmPassword('');
-      setErrorMsg(null);
-
-      if (data.session) {
-        toast('Cuenta creada. Abriendo tu panel de AgroControl.');
-        handleAuthSuccess();
-        return;
-      }
-
-      setStep('verify_email');
-      toast('Revisa tu correo e ingresa el código de verificación.');
-    } catch (err: unknown) {
-      setLoading(false);
-      const message = err instanceof Error ? err.message : 'Error al registrarse';
-      setErrorMsg(message);
-    }
-  };
-
-  const handleVerifyEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanEmail = email.trim();
-    const token = emailCode.replace(/\D/g, '');
-
-    if (token.length !== 6) {
-      setErrorMsg('Escribe el código de 6 dígitos que enviamos a tu correo.');
-      return;
-    }
-
-    setLoading(true);
-    setErrorMsg(null);
-
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase.auth.verifyOtp({
-        email: cleanEmail,
-        token,
-        type: 'signup',
-      });
-
-      if (error) {
-        setLoading(false);
-        setErrorMsg('El código no es válido o ya venció. Revisa el correo e inténtalo otra vez.');
-        return;
-      }
-
-      setLoading(false);
-      setEmailCode('');
-      if (data.session) {
-        toast('Correo verificado. Tu cuenta ya está lista.');
-        handleAuthSuccess();
-        return;
-      }
-
-      toast('Correo verificado. Ya puedes iniciar sesión.');
-      setStep('email_password');
-    } catch (err: unknown) {
-      setLoading(false);
-      const message = err instanceof Error ? err.message : 'No se pudo verificar el correo.';
       setErrorMsg(message);
     }
   };
@@ -308,7 +208,7 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                   Iniciar sesión
                 </h2>
                 <p className="text-sm text-[#527068] leading-relaxed mb-6">
-                  Elige cómo deseas identificarte para ingresar a tu cuenta de AgroControl.
+                  Elige cómo deseas ingresar. Las cuentas son creadas previamente por el equipo de AgroControl.
                 </p>
 
                 {errorMsg && (
@@ -341,7 +241,7 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     <ArrowRight className="w-4 h-4 text-[#7e9e94]" />
                   </button>
 
-                  {/* Passkey / Biometría (Windows Hello / Huella / PIN) */}
+                  {/* Passkey con la opción de verificación disponible en el dispositivo */}
                   <button
                     onClick={() => {
                       setErrorMsg(null);
@@ -359,29 +259,13 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                           <span>Biometría / Passkey</span>
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#56f3bd] text-[#041f1b] font-black">FIDO2</span>
                         </div>
-                        <div className="text-xs font-normal text-[#94ffb1]">Rostro, huella o bloqueo del dispositivo</div>
+                        <div className="text-xs font-normal text-[#94ffb1]">Biometría, PIN o llave de seguridad compatible</div>
                       </div>
                     </div>
                     <ArrowRight className="w-4 h-4 text-[#56f3bd] group-hover:translate-x-1 transition-transform" />
                   </button>
 
                 </div>
-              </div>
-
-              <div className="pt-4 text-center text-xs text-[#527068]">
-                ¿No tienes cuenta?{' '}
-                <button
-                  onClick={() => {
-                    setErrorMsg(null);
-                    setFullName('');
-                    setConfirmPassword('');
-                    setStep('register');
-                  }}
-                  type="button"
-                  className="font-bold text-[#13795b] hover:underline cursor-pointer"
-                >
-                  Crear cuenta
-                </button>
               </div>
 
               <div className="pt-6 border-t border-[#e2ece7] flex items-center gap-2 text-xs text-[#527068]">
@@ -432,14 +316,22 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     </label>
                     <div className="relative">
                       <input
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         required
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                        className="w-full px-4 py-3 pr-12 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
                       />
-                      <Lock className="w-4 h-4 text-[#8ea49c] absolute right-4 top-3.5 pointer-events-none" />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((visible) => !visible)}
+                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        aria-pressed={showPassword}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg text-[#527068] hover:bg-[#f0f5f2] focus:outline-none focus:ring-2 focus:ring-[#13795b]"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
                     </div>
                     <button
                       onClick={() => {
@@ -477,21 +369,6 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                 </form>
               </div>
 
-              <div className="pt-4 text-center text-xs text-[#527068]">
-                ¿No tienes cuenta?{' '}
-                <button
-                  onClick={() => {
-                    setErrorMsg(null);
-                    setConfirmPassword('');
-                    setStep('register');
-                  }}
-                  type="button"
-                  className="font-bold text-[#13795b] hover:underline cursor-pointer"
-                >
-                  Crear cuenta
-                </button>
-              </div>
-
               <div className="pt-6 border-t border-[#e2ece7] text-center text-xs text-[#527068]">
                 ¿Prefieres usar biometría?{' '}
                 <button
@@ -500,204 +377,6 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                   className="font-bold text-[#13795b] hover:underline cursor-pointer"
                 >
                   Entrar con Passkey →
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Estado 2b: Registrarse con Correo y Contraseña */}
-          {step === 'register' && (
-            <div className="flex flex-col h-full justify-between animate-in fade-in duration-200">
-              <div>
-                <button
-                  onClick={() => setStep('select')}
-                  type="button"
-                  className="text-xs font-semibold text-[#527068] hover:text-[#093f33] transition-colors mb-6 cursor-pointer"
-                >
-                  ← Volver a opciones
-                </button>
-
-                <div className="text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-2">
-                  Crear cuenta
-                </div>
-                <h2 className="text-3xl font-black text-[#093f33] mb-2">Únete a AgroControl.</h2>
-                <p className="text-sm text-[#527068] leading-relaxed mb-6">
-                  Crea tu cuenta con correo y contraseña para acceder al panel de monitoreo.
-                </p>
-
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
-                      Nombre completo (opcional)
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="Tu nombre"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
-                      />
-                      <User className="w-4 h-4 text-[#8ea49c] absolute right-4 top-3.5 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
-                      Correo Electrónico
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="Escribe tu correo"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
-                      Contraseña
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="password"
-                        required
-                        minLength={8}
-                        autoComplete="new-password"
-                        placeholder="Mínimo 8 caracteres"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
-                      />
-                      <Lock className="w-4 h-4 text-[#8ea49c] absolute right-4 top-3.5 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
-                      Confirmar contraseña
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="password"
-                        required
-                        placeholder="Repite tu contraseña"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
-                      />
-                      <Lock className="w-4 h-4 text-[#8ea49c] absolute right-4 top-3.5 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  {errorMsg && (
-                    <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium leading-relaxed flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                      <span>{errorMsg}</span>
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={loading || !email.trim() || !password.trim() || !confirmPassword.trim()}
-                    className="w-full py-4 rounded-2xl bg-[#093f33] hover:bg-[#0c4e40] disabled:opacity-50 text-white font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer mt-2"
-                  >
-                    {loading ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <span>Crear cuenta</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-
-              <div className="pt-6 border-t border-[#e2ece7] text-center text-xs text-[#527068]">
-                ¿Ya tienes cuenta?{' '}
-                <button
-                  onClick={() => {
-                    setErrorMsg(null);
-                    setStep('email_password');
-                  }}
-                  type="button"
-                  className="font-bold text-[#13795b] hover:underline cursor-pointer"
-                >
-                  Iniciar sesión →
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === 'verify_email' && (
-            <div className="flex flex-col h-full justify-between animate-in fade-in duration-200">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#13795b]/10 flex items-center justify-center text-[#13795b] mb-5">
-                  <Mail className="w-6 h-6" />
-                </div>
-                <div className="text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-2">
-                  Confirma tu correo
-                </div>
-                <h2 id="loginTitle" className="text-3xl sm:text-4xl font-black text-[#093f33] mb-3">
-                  Revisa tu bandeja.
-                </h2>
-                <p className="text-sm text-[#527068] leading-relaxed mb-6">
-                  Enviamos un código de 6 dígitos a{' '}
-                  <span className="font-bold text-[#093f33] break-all">{email}</span>. Escríbelo para verificar tu cuenta.
-                </p>
-
-                <form onSubmit={handleVerifyEmail} className="space-y-4">
-                  <div>
-                    <label htmlFor="email-verification-code" className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
-                      Código de verificación
-                    </label>
-                    <input
-                      id="email-verification-code"
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      pattern="[0-9]{6}"
-                      maxLength={6}
-                      required
-                      placeholder="123456"
-                      value={emailCode}
-                      onChange={(event) => setEmailCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
-                      className="w-full px-4 py-4 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] text-center font-bold text-2xl tracking-[0.45em] focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
-                    />
-                  </div>
-
-                  {errorMsg && (
-                    <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium leading-relaxed flex items-start gap-2" role="alert">
-                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                      <span>{errorMsg}</span>
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={loading || emailCode.length !== 6}
-                    className="w-full min-h-12 py-3 rounded-2xl bg-[#093f33] hover:bg-[#0c4e40] disabled:opacity-50 text-white font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <><span>Verificar correo</span><ArrowRight className="w-4 h-4" /></>}
-                  </button>
-                </form>
-              </div>
-
-              <div className="pt-6 mt-6 border-t border-[#e2ece7] text-center text-xs text-[#527068]">
-                <p>Si no aparece, revisa la carpeta de correo no deseado.</p>
-                <button
-                  onClick={() => {
-                    setEmailCode('');
-                    setErrorMsg(null);
-                    setStep('register');
-                  }}
-                  type="button"
-                  className="mt-3 font-bold text-[#13795b] hover:underline cursor-pointer"
-                >
-                  Volver al registro
                 </button>
               </div>
             </div>
@@ -801,33 +480,43 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     <label htmlFor="new-password" className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
                       Nueva contraseña
                     </label>
-                    <input
-                      id="new-password"
-                      type="password"
-                      autoComplete="new-password"
-                      minLength={8}
-                      required
-                      placeholder="Mínimo 8 caracteres"
-                      value={newPassword}
-                      onChange={(event) => setNewPassword(event.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
-                    />
+                    <div className="relative">
+                      <input
+                        id="new-password"
+                        type={showNewPassword ? 'text' : 'password'}
+                        autoComplete="new-password"
+                        minLength={8}
+                        required
+                        placeholder="Mínimo 8 caracteres"
+                        value={newPassword}
+                        onChange={(event) => setNewPassword(event.target.value)}
+                        className="w-full px-4 py-3 pr-12 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                      />
+                      <button type="button" onClick={() => setShowNewPassword((visible) => !visible)} aria-label={showNewPassword ? 'Ocultar contraseña nueva' : 'Mostrar contraseña nueva'} aria-pressed={showNewPassword} className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg text-[#527068] hover:bg-[#f0f5f2] focus:outline-none focus:ring-2 focus:ring-[#13795b]">
+                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label htmlFor="confirm-new-password" className="block text-xs font-bold text-[#093f33] mb-1.5 uppercase tracking-wider">
                       Confirmar contraseña nueva
                     </label>
-                    <input
-                      id="confirm-new-password"
-                      type="password"
-                      autoComplete="new-password"
-                      minLength={8}
-                      required
-                      placeholder="Repite la contraseña nueva"
-                      value={confirmNewPassword}
-                      onChange={(event) => setConfirmNewPassword(event.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
-                    />
+                    <div className="relative">
+                      <input
+                        id="confirm-new-password"
+                        type={showConfirmNewPassword ? 'text' : 'password'}
+                        autoComplete="new-password"
+                        minLength={8}
+                        required
+                        placeholder="Repite la contraseña nueva"
+                        value={confirmNewPassword}
+                        onChange={(event) => setConfirmNewPassword(event.target.value)}
+                        className="w-full px-4 py-3 pr-12 rounded-2xl bg-white border border-[#cbe0d6] focus:border-[#13795b] text-[#093f33] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-[#13795b]/15 transition-all"
+                      />
+                      <button type="button" onClick={() => setShowConfirmNewPassword((visible) => !visible)} aria-label={showConfirmNewPassword ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'} aria-pressed={showConfirmNewPassword} className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg text-[#527068] hover:bg-[#f0f5f2] focus:outline-none focus:ring-2 focus:ring-[#13795b]">
+                        {showConfirmNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
 
                   {errorMsg && (

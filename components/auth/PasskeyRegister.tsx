@@ -42,7 +42,7 @@ export function PasskeyRegister() {
       if (registerError) throw registerError;
 
       setMsg('Acceso biométrico configurado en este dispositivo.');
-      toast('Passkey registrada. Cuando el dispositivo lo permita, podrás verificar con el rostro.');
+      toast('Passkey registrada. Usa la opción de verificación que ofrezca tu dispositivo.');
       await loadPasskeys();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Error registrando Passkey.';
@@ -93,8 +93,8 @@ export function PasskeyRegister() {
             <Fingerprint className="w-5 h-5 text-[#56f3bd]" />
           </div>
           <div>
-            <div className="text-sm font-bold text-white">Rostro con Passkey</div>
-            <div className="text-xs text-[#a0c7b9]">Face ID o Windows Hello, si el dispositivo lo admite</div>
+            <div className="text-sm font-bold text-white">Biometría o método de acceso</div>
+            <div className="text-xs text-[#a0c7b9]">Biometría, PIN o llave, según el dispositivo</div>
           </div>
         </div>
         <button
@@ -103,7 +103,7 @@ export function PasskeyRegister() {
           className="self-start min-[480px]:self-auto shrink-0 min-h-11 px-4 py-2 rounded-xl bg-[#13795b] hover:bg-[#1a9470] disabled:opacity-50 text-white text-xs font-bold transition-colors flex items-center gap-2"
         >
           {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Fingerprint className="w-3.5 h-3.5" />}
-          {loading ? 'Configurando...' : 'Configurar rostro'}
+          {loading ? 'Configurando...' : 'Configurar método'}
         </button>
       </div>
 
@@ -119,7 +119,7 @@ export function PasskeyRegister() {
       )}
 
       <p className="text-xs leading-relaxed text-[#a0c7b9]">
-        La verificación ocurre en el dispositivo: AgroControl no recibe ni guarda fotos del rostro. Si el dispositivo no admite reconocimiento facial, puede ofrecer otro método local, como huella o PIN.
+        La verificación ocurre en el dispositivo con la opción compatible que elijas. AgroControl no recibe ni guarda fotos ni plantillas biométricas; Supabase valida la Passkey registrada.
       </p>
 
       <div className="border-t border-white/10 pt-3">

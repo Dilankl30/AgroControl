@@ -50,11 +50,11 @@ export function PasskeyAuth({ onBack, onSuccess }: { onBack: () => void; onSucce
         </button>
 
         <div className="text-xs font-extrabold uppercase tracking-widest text-[#13795b] mb-2">
-          Acceso biométrico
+          Acceso seguro con Passkey
         </div>
-        <h2 className="text-3xl font-black text-[#093f33] mb-2">Entra con tu rostro</h2>
+        <h2 className="text-3xl font-black text-[#093f33] mb-2">Usa el método de tu dispositivo</h2>
         <p className="text-sm text-[#527068] leading-relaxed mb-6">
-          Pulsa continuar y confirma con Face ID o Windows Hello cuando tu dispositivo lo admita. La cámara y los datos del rostro los gestiona el dispositivo; AgroControl no recibe ni guarda tu imagen.
+          Pulsa continuar y confirma con la opción que admita tu dispositivo, como reconocimiento facial, huella, PIN o llave de seguridad. El dispositivo verifica tu identidad; AgroControl no recibe ni guarda tus datos biométricos.
         </p>
 
         {errorMsg && (
@@ -71,12 +71,12 @@ export function PasskeyAuth({ onBack, onSuccess }: { onBack: () => void; onSucce
           className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#072f28] to-[#041d18] hover:from-[#0a3f36] hover:to-[#072f28] disabled:opacity-50 text-white font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
         >
           {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Fingerprint className="w-4 h-4" />}
-          <span>{loading ? 'Verificando...' : 'Continuar con mi rostro'}</span>
+          <span>{loading ? 'Verificando...' : 'Continuar con Passkey'}</span>
         </button>
       </div>
 
       <div className="pt-6 border-t border-[#e2ece7] text-xs text-[#527068]">
-        Primero inicia sesión con tu correo y contraseña y configura el rostro en “Tus métodos de acceso”. Algunos dispositivos pueden ofrecer huella o PIN como alternativa local.
+        Primero inicia sesión con tu correo y contraseña y registra una Passkey en “Tus métodos de acceso”. Las opciones de verificación dependen del dispositivo y pueden incluir biometría, PIN o una llave de seguridad.
       </div>
     </div>
   );

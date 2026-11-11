@@ -9,7 +9,9 @@ export function HeroSection({ onOpenLogin }: { onOpenLogin: () => void }) {
   const scrollTo3D = () => {
     const el = document.getElementById('sceneContainer');
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const top = el.getBoundingClientRect().top + window.scrollY - 72;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      el.focus({ preventScroll: true });
     }
   };
 
@@ -70,7 +72,7 @@ export function HeroSection({ onOpenLogin }: { onOpenLogin: () => void }) {
         </div>
 
         {/* Columna Derecha: Contenedor Gemelo Digital 3D */}
-        <div id="sceneContainer" className="w-full min-w-0 scroll-mt-4">
+        <div id="sceneContainer" tabIndex={-1} aria-label="Experiencia 3D interactiva del invernadero" className="w-full min-w-0 scroll-mt-4 outline-none">
           <Greenhouse3D onOpenLogin={onOpenLogin} />
         </div>
       </div>

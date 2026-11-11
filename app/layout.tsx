@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'AgroControl | Gemelo Digital 3D & Monitoreo Agrícola',
+  title: 'AgroControl | Monitoreo IoT Agrícola',
   description:
     'Plataforma de investigación aplicada y monitoreo en tiempo real de invernaderos inteligentes (ESPOCH / AgroControl).',
 };
