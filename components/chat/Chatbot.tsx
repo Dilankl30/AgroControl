@@ -26,18 +26,21 @@ const BOT_KNOWLEDGE_BASE: { keywords: string[]; answer: string }[] = [
   {
     keywords: ['sensores', 'variables', 'temperatura', 'humedad', 'luz', 'suelo', 'lecturas', 'mediciones'],
     answer:
-      '📊 La plataforma monitorea cuatro variables microclimáticas y agronómicas críticas:\n\n' +
-      '• **Sensor 01 (Temperatura Canopia):** 23.8 °C (óptimo para evitar estrés térmico).\n' +
-      '• **Sensor 02 (Humedad Relativa):** 68% (previene botrytis y regula transpiración).\n' +
-      '• **Sensor 03 (Luminosidad PAR):** Alta con cobertura uniforme para fotosíntesis activa.\n' +
-      '• **Sensor 04 (Humedad de Suelo):** Sonda de inserción radicular para optimizar fertirriego.',
+      '📊 El sistema contempla seis variables distintas para el invernadero:\n\n' +
+      '• **Sensor 01 · Temperatura del aire:** lectura demostrativa de 23.8 °C.\n' +
+      '• **Sensor 02 · Humedad del aire:** lectura demostrativa de 68%.\n' +
+      '• **Sensor 03 · Humedad del suelo:** lectura demostrativa de 42%.\n' +
+      '• **Sensor 04 · Intensidad de luz:** lectura demostrativa de 850 W/m².\n' +
+      '• **Sensor 05 · Concentración de CO₂:** lectura demostrativa de 420 ppm.\n' +
+      '• **Sensor 06 · Temperatura del suelo:** lectura demostrativa de 18.6 °C.\n\n' +
+      'Las lecturas son de demostración; el sistema aún no está conectado a sensores físicos.',
   },
   {
     keywords: ['gemelo', 'digital', '3d', 'interactivo', 'girar', 'techo', 'modelo', 'camara', 'orbita'],
     answer:
       '🎮 El **Gemelo Digital 3D** es una réplica virtual e interactiva del invernadero:\n\n' +
       '• **Arrastra con el ratón:** Rota la vista en 360° para inspeccionar cualquier ángulo.\n' +
-      '• **Clic en nodos (01 al 04):** Despliega el inspector isométrico con detalles técnicos.\n' +
+      '• **Clic en nodos (01 al 06):** Despliega el inspector isométrico con detalles técnicos.\n' +
       '• **Ocultar techo:** Desmonta la cubierta translúcida para ver las camas de cultivo y los tomates.\n' +
       '• **Girar:** Activa o pausa la rotación automática suave.',
   },
@@ -60,6 +63,31 @@ const BOT_KNOWLEDGE_BASE: { keywords: string[]; answer: string }[] = [
       '🏛️ AgroControl nace de la colaboración de investigación aplicada de la **ESPOCH (Escuela Superior Politécnica de Chimborazo)** para transferir tecnología digital de punta al sector agrícola ecuatoriano.',
   },
 ];
+
+function renderInlineFormatting(text: string, keyPrefix: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={`${keyPrefix}-${index}`} className="font-bold text-white">{part.slice(2, -2)}</strong>;
+    }
+    return <React.Fragment key={`${keyPrefix}-${index}`}>{part}</React.Fragment>;
+  });
+}
+
+function renderMessageText(text: string) {
+  return text.split('\n').map((line, index) => {
+    const trimmed = line.trim();
+    if (!trimmed) return <div key={`line-${index}`} className="h-2" aria-hidden="true" />;
+    if (trimmed.startsWith('• ')) {
+      return (
+        <div key={`line-${index}`} className="flex min-w-0 items-start gap-2">
+          <span className="shrink-0 text-[#56f3bd]" aria-hidden="true">•</span>
+          <span className="min-w-0 break-words [overflow-wrap:anywhere]">{renderInlineFormatting(trimmed.slice(2), `bullet-${index}`)}</span>
+        </div>
+      );
+    }
+    return <p key={`line-${index}`} className="min-w-0 break-words [overflow-wrap:anywhere]">{renderInlineFormatting(trimmed, `paragraph-${index}`)}</p>;
+  });
+}
 
 function getBotReply(userText: string): string {
   const normalized = userText
@@ -174,18 +202,18 @@ export function Chatbot() {
         <div
           role="dialog"
           aria-label="Ventana de chat AgroControl · Ayuda"
-          className="fixed bottom-6 right-4 sm:right-6 z-50 w-[min(410px,calc(100vw-32px))] h-[580px] max-h-[85vh] flex flex-col rounded-3xl bg-[#071A12]/92 border border-[#56f3bd]/25 backdrop-blur-xl shadow-[0_25px_80px_rgba(0,0,0,0.65)] overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200"
+          className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 w-[min(410px,calc(100vw-24px))] h-[min(580px,calc(100dvh-24px))] flex min-w-0 flex-col rounded-3xl bg-[#071A12]/95 border border-[#56f3bd]/25 backdrop-blur-xl shadow-[0_25px_80px_rgba(0,0,0,0.65)] overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200"
         >
           {/* Encabezado */}
-          <div className="px-5 py-4 bg-[#0a2920]/90 border-b border-[#56f3bd]/20 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="px-3 sm:px-5 py-3 sm:py-4 bg-[#0a2920]/90 border-b border-[#56f3bd]/20 flex min-w-0 items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-3">
               <div className="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-[#13795b] to-[#23d196] flex items-center justify-center text-white shadow">
                 <Sparkles className="w-5 h-5 text-[#eafff4]" />
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#56f3bd] border-2 border-[#071A12]" />
               </div>
-              <div>
-                <div className="font-extrabold text-sm text-white tracking-tight flex items-center gap-1.5">
-                  <span>AgroControl · Ayuda</span>
+              <div className="min-w-0">
+                <div className="font-extrabold text-sm text-white tracking-tight flex min-w-0 items-center gap-1.5">
+                  <span className="truncate">AgroControl · Ayuda</span>
                   <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#56f3bd]/20 text-[#56f3bd]">
                     IoT
                   </span>
@@ -208,13 +236,13 @@ export function Chatbot() {
           </div>
 
           {/* Área de Mensajes */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 scroll-smooth">
+          <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden p-3 sm:p-4 space-y-3.5 scroll-smooth">
             {messages.map((msg) => {
               const isUser = msg.sender === 'user';
               return (
                 <div
                   key={msg.id}
-                  className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+                  className={`flex min-w-0 items-start gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
                 >
                   {/* Avatar */}
                   <div
@@ -229,13 +257,13 @@ export function Chatbot() {
 
                   {/* Burbuja de Texto */}
                   <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-xs sm:text-[13px] leading-relaxed shadow-sm ${
+                    className={`min-w-0 max-w-[calc(100%-2.5rem)] rounded-2xl px-3 sm:px-4 py-2.5 text-xs sm:text-[13px] leading-relaxed shadow-sm break-words [overflow-wrap:anywhere] ${
                       isUser
                         ? 'bg-[#13795b] text-white rounded-br-xs'
                         : 'bg-white/[0.08] text-[#e7f8ef] border border-[#56f3bd]/15 rounded-bl-xs'
                     }`}
                   >
-                    <div className="whitespace-pre-line">{msg.text}</div>
+                    <div className="min-w-0 space-y-1 whitespace-normal">{msg.sender === 'bot' ? renderMessageText(msg.text) : msg.text}</div>
                     <div
                       className={`text-[9px] mt-1 text-right ${
                         isUser ? 'text-white/70' : 'text-[#a0c7b9]/60'
@@ -261,7 +289,7 @@ export function Chatbot() {
           </div>
 
           {/* Sugerencias Rápidas (Chips de Preguntas Frecuentes) */}
-          <div className="px-4 py-2 bg-[#061811]/90 border-t border-[#56f3bd]/15 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <div className="min-w-0 px-4 py-2 bg-[#061811]/90 border-t border-[#56f3bd]/15 flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {QUICK_QUESTIONS.map((q, idx) => (
               <button
                 key={idx}
@@ -275,7 +303,7 @@ export function Chatbot() {
           </div>
 
           {/* Formulario de Entrada */}
-          <div className="p-3 bg-[#0a2920]/90 border-t border-[#56f3bd]/20 flex items-center gap-2">
+          <div className="min-w-0 p-3 bg-[#0a2920]/90 border-t border-[#56f3bd]/20 flex items-center gap-2">
             <input
               type="text"
               placeholder="Pregunta sobre el invernadero..."

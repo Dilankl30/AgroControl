@@ -73,34 +73,34 @@ export function ProjectSections() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="p-6 rounded-2xl bg-[#f2f7f4] border border-[#cbe0d6]">
               <div className="text-xs font-black text-[#13795b] uppercase mb-2">Nodo Sensor 01</div>
-              <h4 className="font-bold text-lg text-[#093f33] mb-1">Humedad del Suelo</h4>
+              <h4 className="font-bold text-lg text-[#093f33] mb-1">Temperatura del Aire</h4>
               <p className="text-xs text-[#527068] leading-relaxed mb-3">
-                Mide el agua en el sustrato para orientar el riego y mantener niveles hídricos adecuados.
+                Supervisa el ambiente térmico sobre el cultivo para identificar cambios de temperatura.
               </p>
               <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#13795b]/10 text-[#13795b]">
-                Monitoreo Radicular
+                Variable Ambiental
               </span>
             </div>
 
             <div className="p-6 rounded-2xl bg-[#f2f7f4] border border-[#cbe0d6]">
               <div className="text-xs font-black text-[#13795b] uppercase mb-2">Nodo Sensor 02</div>
-              <h4 className="font-bold text-lg text-[#093f33] mb-1">Temperatura del Aire</h4>
+              <h4 className="font-bold text-lg text-[#093f33] mb-1">Humedad del Aire</h4>
               <p className="text-xs text-[#527068] leading-relaxed mb-3">
-                Supervisa el confort térmico para detectar picos de calor o frío en el invernadero.
+                Registra la humedad relativa del aire alrededor del cultivo.
               </p>
               <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#13795b]/10 text-[#13795b]">
-                Control Ambiental
+                Humedad Relativa
               </span>
             </div>
 
             <div className="p-6 rounded-2xl bg-[#f2f7f4] border border-[#cbe0d6]">
               <div className="text-xs font-black text-[#13795b] uppercase mb-2">Nodo Sensor 03</div>
-              <h4 className="font-bold text-lg text-[#093f33] mb-1">Humedad del Aire</h4>
+              <h4 className="font-bold text-lg text-[#093f33] mb-1">Humedad del Suelo</h4>
               <p className="text-xs text-[#527068] leading-relaxed mb-3">
-                Registra la humedad relativa para ayudar a prevenir ambientes propicios a hongos.
+                Mide el agua en el sustrato, cerca de las raíces, para orientar el manejo del riego.
               </p>
               <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#13795b]/10 text-[#13795b]">
-                Humedad Relativa
+                Monitoreo Radicular
               </span>
             </div>
 

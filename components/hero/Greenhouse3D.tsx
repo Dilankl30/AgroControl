@@ -3,83 +3,79 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { SensorComponent, SensorHotspot, Vector3D } from '@/lib/types/agrocontrol';
 import { SensorInspectorModal } from '@/components/hero/SensorInspectorModal';
-import { Eye, EyeOff, RotateCcw, RotateCw, Thermometer, Droplets, Sun, Sprout, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, RotateCcw, RotateCw, Thermometer, Droplets, Sun, Sprout, Sparkles, Wind } from 'lucide-react';
 
 const SENSOR_COMPONENTS: Record<string, SensorComponent> = {
-  temp: {
-    id: 'temp',
-    key: 'temp',
-    title: 'Sensor de Temperatura',
-    badge: '23.8 °C · Óptimo · demo',
-    text: 'Monitoreo de temperatura ambiental en canopia aérea. Permite evaluar la acumulación térmica y evitar estrés por calor.',
-    stats: ['Tipo: Termocupla Digital', 'Ubicación: Esquina superior', 'Acción: Historial y alertas'],
-    kind: 'card',
-    value: '23.8 °C',
-  },
-  hum: {
-    id: 'hum',
-    key: 'hum',
-    title: 'Sensor de Humedad',
-    badge: '68% · Óptimo · demo',
-    text: 'Monitoreo de humedad relativa para prevenir botrytis y regular la transpiración del cultivo.',
-    stats: ['Tipo: Higrómetro Capacitivo', 'Ubicación: Lateral de cultivo', 'Acción: Gestión de ventilación'],
-    kind: 'card',
-    value: '68%',
-  },
-  light: {
-    id: 'light',
-    key: 'light',
-    title: 'Sensor de Luminosidad',
-    badge: 'Alta · Cobertura uniforme',
-    text: 'Medición de radiación fotosintéticamente activa (PAR) en la parte superior del dosel.',
-    stats: ['Tipo: Sensor PAR / Radiómetro', 'Ubicación: Cumbrera central', 'Acción: Apertura de malla sombra'],
-    kind: 'card',
-    value: 'Alta',
-  },
   sensor1: {
     id: 'sensor1',
     key: 'sensor1',
-    title: 'Sensor 01 · Temperatura Canopia',
-    badge: 'Nodo 01',
-    text: 'Sensor puntual ubicado sobre el cultivo para representar una estación microclimática. En 3D se visualiza como una cápsula suspendida.',
-    stats: ['Valor demo: 23.8 °C', 'Estado: Operativo', 'Instalación: Suspensión aérea'],
+    title: 'Sensor 01 · Temperatura del aire',
+    badge: '23.8 °C · DEMO',
+    text: 'Mide la temperatura del aire sobre el cultivo para identificar cambios térmicos en el invernadero.',
+    stats: ['Variable: Temperatura del aire', 'Lectura demostrativa: 23.8 °C', 'Ubicación: Sobre el cultivo'],
     kind: 'sensor',
+    value: '23.8 °C',
   },
   sensor2: {
     id: 'sensor2',
     key: 'sensor2',
-    title: 'Sensor 02 · Humedad Relativa',
-    badge: 'Nodo 02',
-    text: 'Nodo conceptual para medir humedad relativa en el plano medio foliar.',
-    stats: ['Valor demo: 68%', 'Estado: Estable', 'Instalación: Lateral de cultivo'],
+    title: 'Sensor 02 · Humedad del aire',
+    badge: '68% · DEMO',
+    text: 'Registra la humedad relativa del aire para seguir las condiciones ambientales alrededor de las plantas.',
+    stats: ['Variable: Humedad relativa', 'Lectura demostrativa: 68%', 'Ubicación: Zona media del cultivo'],
     kind: 'sensor',
+    value: '68%',
   },
   sensor3: {
     id: 'sensor3',
     key: 'sensor3',
-    title: 'Sensor 03 · Luminosidad Cenital',
-    badge: 'Nodo 03',
-    text: 'Punto de medición de luz solar continua en el caballete superior del invernadero.',
-    stats: ['Valor demo: Alta', 'Estado: Activo', 'Instalación: Parte alta'],
+    title: 'Sensor 03 · Humedad del suelo',
+    badge: '42% · DEMO',
+    text: 'Mide el contenido de humedad del sustrato en la zona radicular para orientar el manejo del riego.',
+    stats: ['Variable: Humedad del suelo', 'Lectura demostrativa: 42%', 'Ubicación: Zona de raíces'],
     kind: 'sensor',
+    value: '42%',
   },
   sensor4: {
     id: 'sensor4',
     key: 'sensor4',
-    title: 'Sensor 04 · Humedad de Suelo',
-    badge: 'Nodo 04',
-    text: 'Sensor ilustrativo de suelo insertado cerca de las raíces para optimizar fertirriego.',
-    stats: ['Valor demo: Estable', 'Estado: Operativo', 'Instalación: Cama de cultivo'],
+    title: 'Sensor 04 · Intensidad de luz',
+    badge: '850 W/m² · DEMO',
+    text: 'Registra la intensidad de luz disponible sobre el cultivo para observar sus variaciones durante el día.',
+    stats: ['Variable: Intensidad de luz', 'Lectura demostrativa: 850 W/m²', 'Ubicación: Parte alta del invernadero'],
+    kind: 'sensor',
+    value: '850 W/m²',
+  },
+  sensor5: {
+    id: 'sensor5',
+    key: 'sensor5',
+    title: 'Sensor 05 · Concentración de CO₂',
+    badge: '420 ppm · DEMO',
+    text: 'Mide la concentración de dióxido de carbono en el aire del invernadero.',
+    stats: ['Variable: Concentración de CO₂', 'Lectura demostrativa: 420 ppm', 'Ubicación: Zona de cultivo'],
+    kind: 'sensor',
+    value: '420 ppm',
+  },
+  sensor6: {
+    id: 'sensor6',
+    key: 'sensor6',
+    title: 'Sensor 06 · Temperatura del suelo',
+    badge: '18.6 °C · DEMO',
+    text: 'Registra la temperatura del sustrato en la zona radicular para observar las condiciones térmicas del suelo.',
+    stats: ['Variable: Temperatura del suelo', 'Lectura demostrativa: 18.6 °C', 'Ubicación: Zona de raíces'],
     kind: 'probe',
+    value: '18.6 °C',
   },
 };
 
-// Coordenadas de los 4 nodos sensores ajustadas a la vista de Figma
+// Seis nodos distribuidos en zonas distintas para evitar que sus marcadores se monten.
 const SENSOR_HOTSPOTS: SensorHotspot[] = [
-  { key: 'sensor1', world: { x: -1.8, y: 1.6, z: 2.2 }, label: '01' },
-  { key: 'sensor2', world: { x: 0.6, y: 2.2, z: 0.2 }, label: '02' },
-  { key: 'sensor3', world: { x: -0.2, y: 3.6, z: -1.2 }, label: '03' },
-  { key: 'sensor4', world: { x: 2.2, y: 0.9, z: 2.0 }, label: '04' },
+  { key: 'sensor1', world: { x: -2.2, y: 2.0, z: 2.8 }, label: '01' },
+  { key: 'sensor2', world: { x: 2.2, y: 2.1, z: -2.8 }, label: '02' },
+  { key: 'sensor3', world: { x: -2.2, y: 0.45, z: -2.8 }, label: '03' },
+  { key: 'sensor4', world: { x: 0, y: 3.7, z: 0 }, label: '04' },
+  { key: 'sensor5', world: { x: 2.2, y: 2.0, z: 2.8 }, label: '05' },
+  { key: 'sensor6', world: { x: -2.2, y: 0.45, z: 2.8 }, label: '06' },
 ];
 
 export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
@@ -115,7 +111,7 @@ export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
   }, []);
 
   const nextComponent = useCallback(() => {
-    const keys = Object.keys(SENSOR_COMPONENTS);
+    const keys = SENSOR_HOTSPOTS.map(({ key }) => key);
     const currentKey = activeComponent?.key || 'sensor1';
     const nextIdx = (keys.indexOf(currentKey) + 1) % keys.length;
     openComponent(keys[nextIdx]);
@@ -633,48 +629,6 @@ export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
         className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing outline-none"
       />
 
-      {/* Tarjeta Flotante 1: Luminosidad (Top-Left) */}
-      <button
-        onClick={() => openComponent('light')}
-        type="button"
-        className="hidden sm:block absolute top-20 left-7 z-20 min-w-[150px] p-4 rounded-2xl bg-[#093c31]/85 hover:bg-[#0c4e40] border border-[#56f3bd]/25 hover:border-[#56f3bd]/45 shadow-xl backdrop-blur-md text-left transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
-      >
-        <div className="flex items-center gap-1.5 text-xs text-[#a0ffca] mb-1 font-semibold">
-          <Sun className="w-3.5 h-3.5 text-[#efc369]" />
-          <span>Luminosidad</span>
-        </div>
-        <div className="text-2xl font-black text-white">Alta</div>
-        <div className="text-[11px] text-[#caeadc]/80 mt-0.5">Cobertura uniforme</div>
-      </button>
-
-      {/* Tarjeta Flotante 2: Temperatura (Top-Right) */}
-      <button
-        onClick={() => openComponent('temp')}
-        type="button"
-        className="hidden sm:block absolute top-20 right-7 z-20 min-w-[150px] p-4 rounded-2xl bg-[#093c31]/85 hover:bg-[#0c4e40] border border-[#56f3bd]/25 hover:border-[#56f3bd]/45 shadow-xl backdrop-blur-md text-left transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
-      >
-        <div className="flex items-center gap-1.5 text-xs text-[#a0ffca] mb-1 font-semibold">
-          <Thermometer className="w-3.5 h-3.5 text-[#56f3bd]" />
-          <span>Temperatura</span>
-        </div>
-        <div className="text-2xl font-black text-white">23.8 °C</div>
-        <div className="text-[11px] text-[#caeadc]/80 mt-0.5">Óptimo · demo</div>
-      </button>
-
-      {/* Tarjeta Flotante 3: Humedad (Mid-Left, reubicada para evitar solapamientos) */}
-      <button
-        onClick={() => openComponent('hum')}
-        type="button"
-        className="absolute top-[175px] left-7 z-20 min-w-[150px] p-4 rounded-2xl bg-[#093c31]/85 hover:bg-[#0c4e40] border border-[#56f3bd]/25 hover:border-[#56f3bd]/45 shadow-xl backdrop-blur-md text-left transition-all duration-200 hover:-translate-y-0.5 hidden sm:block cursor-pointer"
-      >
-        <div className="flex items-center gap-1.5 text-xs text-[#a0ffca] mb-1 font-semibold">
-          <Droplets className="w-3.5 h-3.5 text-[#56f3bd]" />
-          <span>Humedad</span>
-        </div>
-        <div className="text-2xl font-black text-white">68%</div>
-        <div className="text-[11px] text-[#caeadc]/80 mt-0.5">Óptimo · demo</div>
-      </button>
-
       {/* Inspector Isométrico Flotante (al hacer clic en cualquier sensor o tarjeta) */}
       <SensorInspectorModal
         component={activeComponent}
@@ -694,22 +648,26 @@ export function Greenhouse3D({ onOpenLogin }: { onOpenLogin: () => void }) {
         {/* Fila de Chips de Sensores con Íconos Elegantes */}
         <div className="flex flex-wrap items-center gap-2 pointer-events-auto">
           {SENSOR_HOTSPOTS.map((s) => {
-            const Icon =
-              s.key === 'sensor1'
-                ? Thermometer
-                : s.key === 'sensor2'
-                ? Droplets
-                : s.key === 'sensor3'
+            const Icon = s.key === 'sensor2' || s.key === 'sensor3'
+              ? Droplets
+              : s.key === 'sensor4'
                 ? Sun
-                : Sprout;
-            const label =
-              s.key === 'sensor1'
-                ? 'Temperatura'
-                : s.key === 'sensor2'
-                ? 'Humedad'
+                : s.key === 'sensor5'
+                  ? Wind
+                  : s.key === 'sensor6'
+                    ? Thermometer
+                    : Thermometer;
+            const label = s.key === 'sensor1'
+              ? 'Temp. aire'
+              : s.key === 'sensor2'
+                ? 'Hum. aire'
                 : s.key === 'sensor3'
-                ? 'Luz'
-                : 'Suelo';
+                  ? 'Hum. suelo'
+                  : s.key === 'sensor4'
+                    ? 'Luz'
+                    : s.key === 'sensor5'
+                      ? 'CO₂'
+                      : 'Temp. suelo';
 
             return (
               <button
